@@ -37,15 +37,15 @@ pub fn extract_img_url(record: SAPRecord) -> Result<(String, SAPItem), Box<dyn E
     };
 
     let item_name = if NAME_EXCEPTIONS.contains_key(&rec_name) {
-        NAME_EXCEPTIONS.get(&rec_name).unwrap().replace(" ", "_")
+        NAME_EXCEPTIONS.get(&rec_name).unwrap().replace(' ', "_")
     } else {
-        rec_name.replace(" ", "_")
+        rec_name.replace(' ', "_")
     };
 
     let fd_item_filename = format!("{item_name}_Icon.png");
     let mdata_url = format!("{BASE_FANDOM_FILE_URL}{fd_item_filename}");
 
-    // Fairly inefficient as we're literally only looking for two numbers preceding the name of the item icon.
+    // Fairly inefficient as we're literally parsing an entire page for two numbers preceding the name of the item icon.
     // https://static.wikia.nocookie.net/superautopets/images/?/?/item.png
     let res_mdata_page = ureq::get(&mdata_url).call()?.into_string()?;
 
@@ -84,7 +84,7 @@ fn extract_existing_urls(path: Option<&str>, entity: saptest::Entity) -> HashMap
             .map(|record| {
                 let name = match &record {
                     SAPRecord::Food(food_rec) => food_rec.name.to_string(),
-                    SAPRecord::Pet(pet_rec) => pet_rec.name.to_string()
+                    SAPRecord::Pet(pet_rec) => pet_rec.name.to_string(),
                 };
                 // And construct a SAPItem storing the record and its icon.
                 let icon_url = items_json.get(&name).unwrap().to_string();

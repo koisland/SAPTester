@@ -15,7 +15,7 @@ pub fn Nav(cx: Scope) -> Element {
                 }
                 Link {
                     class: "w3-bar-item w3-button w3-hide-small w3-hover-white",
-                    to: "/battle", 
+                    to: "/battle",
                     "Battle"
                 }
                 Link {
