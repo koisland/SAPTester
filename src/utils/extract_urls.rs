@@ -52,6 +52,13 @@ impl SAPItem {
     pub fn is_pack(&self, pack: &str) -> bool {
         self.get_pack() == pack
     }
+
+    pub fn is_holdable(&self) -> bool {
+        match &self.record {
+            SAPRecord::Food(food_rec) => food_rec.holdable,
+            SAPRecord::Pet(_) => false,
+        }
+    }
 }
 
 impl std::hash::Hash for SAPItem {

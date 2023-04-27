@@ -15,6 +15,13 @@ pub enum TeamType {
     Enemy,
 }
 
+#[derive(Debug, Clone, Default, Hash, PartialEq, Eq)]
+pub enum PetProperty {
+    #[default]
+    Stats,
+    Effect,
+}
+
 impl std::fmt::Display for TeamType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -24,9 +31,19 @@ impl std::fmt::Display for TeamType {
     }
 }
 
+impl std::fmt::Display for PetProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PetProperty::Stats => write!(f, "Stats"),
+            PetProperty::Effect => write!(f, "Effect"),
+        }
+    }
+}
+
 #[derive(Props)]
 pub struct TeamState<'a> {
     pub selected_team: &'a UseState<String>,
+    pub selected_pet_idx: &'a UseState<Option<usize>>,
     pub selected_item: &'a UseState<Option<String>>,
     pub teams: &'a UseState<HashMap<String, Vec<(String, Pet)>>>,
 }
@@ -60,7 +77,12 @@ fn add_pet_to_team(cx: &Scoped<TeamState>, item_info: &SAPItem) -> Result<(), Bo
 fn remove_pet_from_team(cx: &Scoped<TeamState>, pet_idx: usize) {
     cx.props.teams.with_mut(|teams| {
         if let Some(selected_team_pets) = teams.get_mut(cx.props.selected_team.get()) {
+            // Remove pet from pets.
+            // Should never panic.
             selected_team_pets.remove(pet_idx);
+
+            // Reset selected pet.
+            cx.props.selected_pet_idx.set(None)
         }
     })
 }
@@ -102,9 +124,10 @@ pub fn GameItemsContainer<'a>(cx: Scope<'a, TeamState<'a>>) -> Element {
                     saptest::Entity::Pet.to_string(),
                     cx.render(rsx! {
                         div {
-                            class: "w3_container w3-padding {img_hover_css}",
+                            class: "w3-table w3-striped w3-border w3-responsive w3-white {img_hover_css}",
                             for (name, item_info) in pets.iter() {
                                 img {
+                                    class: "w3-image",
                                     src: "{item_info.icon}",
                                     title: "{name}",
                                     onclick: move |_| {
@@ -121,9 +144,10 @@ pub fn GameItemsContainer<'a>(cx: Scope<'a, TeamState<'a>>) -> Element {
                     saptest::Entity::Food.to_string(),
                     cx.render(rsx! {
                         div {
-                            class: "w3_container w3-padding {img_hover_css}",
-                            for (name, item_info) in foods.iter() {
+                            class: "w3-table w3-striped w3-border w3-responsive w3-white {img_hover_css}",
+                            for (name, item_info) in foods.iter().filter(|(_, item_info)| item_info.is_holdable()) {
                                 img {
+                                    class: "w3-image",
                                     src: "{item_info.icon}",
                                     title: "{name}",
                                     draggable: "true",
@@ -140,7 +164,22 @@ pub fn GameItemsContainer<'a>(cx: Scope<'a, TeamState<'a>>) -> Element {
     })
 }
 
+fn PetAttrContainer<'a>(cx: Scope<'a, TeamState<'a>>) -> Element<'a> {
+    cx.render(rsx! {
+        div {
+            "{cx.props.selected_pet_idx:?}"
+        }
+    })
+}
+
 fn PetItemIcon<'a>(cx: Scope<'a, TeamState<'a>>, pet: &'a Pet) -> Element<'a> {
+    let item_icon_css = css!(
+        "
+        width: 15%;
+        height: 15%;
+        float: left;
+    "
+    );
     // Safe to unwrap as assertion at init ensures foods and pets exist.
     if let Some(Some(item)) = pet.item.as_ref().map(|item| {
         SAP_ITEM_IMG_URLS
@@ -150,6 +189,7 @@ fn PetItemIcon<'a>(cx: Scope<'a, TeamState<'a>>, pet: &'a Pet) -> Element<'a> {
     }) {
         cx.render(rsx! {
             img {
+                class: "w3-image {item_icon_css}",
                 src: "{item.icon}",
             }
         })
@@ -171,23 +211,29 @@ pub fn TeamContainer<'a>(cx: Scope<'a, TeamState<'a>>) -> Element {
 
     cx.render(rsx! {
         table {
-            class: "w3-table w3-striped w3-bordered w3-border w3-hoverable w3-white",
+            class: "w3-table w3-striped w3-border w3-responsive w3-white",
+            style: "overflow: scroll;",
             tr {
                 for (i, (pet_img_url, pet)) in selected_team_pets.iter().enumerate() {
                     td {
-                        class: "{img_hover_css}",
+                        class: "w3-border {img_hover_css}",
                         // Include image of item icon.
                         PetItemIcon(cx, pet)
 
                         img {
+                            class: "w3-image",
                             src: "{pet_img_url}",
                             title: "{i}_{pet.name}",
-                            ondragover: move |_| {
+                            // Assign item to pet.
+                            ondragenter: move |_| {
                                 if let Err(err) = assign_item_to_pet(cx, i) {
                                     info!("{err}")
                                 }
                             },
-                            onclick: move |_| remove_pet_from_team(cx, i)
+                            // Remove pet.
+                            ondblclick: move |_| remove_pet_from_team(cx, i),
+                            // Set pet as current.
+                            onclick: move |_| cx.props.selected_pet_idx.set(Some(i))
                         }
                     }
                 }
@@ -214,9 +260,10 @@ pub fn TabContainer<'a>(cx: Scope<'a, TabState<'a>>) -> Element {
                     "{cx.props.desc}"
                 }
                 div {
-                    class: "w3-dropdown-content w3-card",
+                    class: "w3-dropdown-content",
                     for tab in cx.props.tabs.keys() {
                         button {
+                            class: "w3-button",
                             onclick: move |_| cx.props.selected_tab.set(tab.clone()),
                             "{tab}"
                         }
@@ -235,8 +282,15 @@ pub fn TabContainer<'a>(cx: Scope<'a, TabState<'a>>) -> Element {
 }
 
 pub fn Battle(cx: Scope) -> Element {
+    // Selected team.
     let selected_team = use_state(cx, || TeamType::default().to_string());
+    // Selected item.
     let selected_item = use_state(cx, || None);
+    // Selected pet.
+    let selected_pet_idx = use_state(cx, || None);
+    // Selected pet property.
+    let selected_pet_property = use_state(cx, || PetProperty::default().to_string());
+    // Stored state for pets.
     let team_pets = use_state(cx, || {
         let mut teams = HashMap::<String, Vec<(String, Pet)>>::new();
         teams.insert(
@@ -250,6 +304,27 @@ pub fn Battle(cx: Scope) -> Element {
         teams
     });
 
+    let team_container_component = || {
+        cx.render(rsx! {
+            TeamContainer {
+                selected_team: selected_team,
+                selected_item: selected_item,
+                selected_pet_idx: selected_pet_idx,
+                teams: team_pets
+            }
+        })
+    };
+    let pet_attr_component = || {
+        cx.render(rsx! {
+            PetAttrContainer {
+                selected_team: selected_team,
+                selected_item: selected_item,
+                selected_pet_idx: selected_pet_idx,
+                teams: team_pets
+            }
+        })
+    };
+
     cx.render(rsx! {
         div {
             TabContainer {
@@ -258,25 +333,30 @@ pub fn Battle(cx: Scope) -> Element {
                 tabs: HashMap::from_iter([
                     (
                         TeamType::Friend.to_string(),
-                        cx.render(rsx! {
-                            TeamContainer {
-                                selected_team: selected_team,
-                                selected_item: selected_item,
-                                teams: team_pets
-                            }
-                        })
+                        team_container_component()
                     ),
                     (
                         TeamType::Enemy.to_string(),
-                        cx.render(rsx! {
-                            TeamContainer {
-                                selected_team: selected_team,
-                                selected_item: selected_item,
-                                teams: team_pets
-                            }
-                        })
+                        team_container_component()
                     )
                 ]),
+            }
+
+            hr {}
+
+            TabContainer {
+                desc: "Current Pet",
+                selected_tab: selected_pet_property,
+                tabs: HashMap::from_iter([
+                    (
+                        PetProperty::Stats.to_string(),
+                        pet_attr_component()
+                    ),
+                    (
+                        PetProperty::Effect.to_string(),
+                        pet_attr_component()
+                    ),
+                ])
             }
 
             hr {}
@@ -284,6 +364,7 @@ pub fn Battle(cx: Scope) -> Element {
             GameItemsContainer {
                 selected_team: selected_team,
                 selected_item: selected_item,
+                selected_pet_idx: selected_pet_idx,
                 teams: team_pets
             }
         }
