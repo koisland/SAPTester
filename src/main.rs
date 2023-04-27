@@ -33,7 +33,7 @@ async fn main() {
                     r#"
             <!DOCTYPE html>
             <html>
-                <head> <title>Dioxus LiveView with axum</title>  </head>
+                <head> <title>SAPTester</title>  </head>
                 <body> <div id="main"></div> </body>
                 {glue}
             </html>

@@ -1743,6 +1743,7 @@ dependencies = [
  "dioxus-router",
  "itertools",
  "lazy_static",
+ "log",
  "regex",
  "saptest",
  "serde",

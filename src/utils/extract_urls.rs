@@ -24,6 +24,36 @@ pub struct SAPItem {
     pub icon: String,
 }
 
+#[allow(dead_code)]
+impl SAPItem {
+    pub fn get_name(&self) -> String {
+        match &self.record {
+            SAPRecord::Food(food_rec) => food_rec.name.to_string(),
+            SAPRecord::Pet(pet_rec) => pet_rec.name.to_string(),
+        }
+    }
+    pub fn is_name(&self, name: &str) -> bool {
+        self.get_name() == name
+    }
+
+    pub fn get_effect(&self) -> String {
+        match &self.record {
+            SAPRecord::Food(food_rec) => food_rec.effect.to_owned(),
+            SAPRecord::Pet(pet_rec) => pet_rec.effect.clone().unwrap_or("None".to_owned()),
+        }
+    }
+    pub fn get_pack(&self) -> String {
+        match &self.record {
+            SAPRecord::Food(food_rec) => food_rec.pack.to_string(),
+            SAPRecord::Pet(pet_rec) => pet_rec.pack.to_string(),
+        }
+    }
+
+    pub fn is_pack(&self, pack: &str) -> bool {
+        self.get_pack() == pack
+    }
+}
+
 impl std::hash::Hash for SAPItem {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.icon.hash(state);

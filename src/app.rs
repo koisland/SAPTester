@@ -26,6 +26,5 @@ pub fn app(cx: Scope) -> Element {
             class: "w3-light-grey",
             AppRoutes {}
         }
-
     })
 }

@@ -12,6 +12,7 @@ dioxus-liveview = { version = "0.3.0", features = ["axum"] }
 dioxus-router = "0.3.0"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
+log = "0.4.17"
 regex = "1.8.1"
 saptest = "0.4.5"
 serde = "1.0.160"
