@@ -5,14 +5,14 @@ mod components;
 mod utils;
 
 use axum::{extract::ws::WebSocketUpgrade, response::Html, routing::get, Router};
+use indexmap::IndexMap;
 use lazy_static::lazy_static;
-use std::collections::HashMap;
 use utils::extract_urls::SAPItem;
 
 use crate::{app::app, utils::extract_urls::extract_sap_image_urls};
 
 lazy_static! {
-    static ref SAP_ITEM_IMG_URLS: HashMap<String, HashMap<String, SAPItem>> =
+    static ref SAP_ITEM_IMG_URLS: IndexMap<String, IndexMap<String, SAPItem>> =
         extract_sap_image_urls();
 }
 

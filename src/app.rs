@@ -23,6 +23,7 @@ pub fn app(cx: Scope) -> Element {
         }
         AppStyle {},
         body {
+            style: "min-height: 100vh;",
             class: "w3-light-grey",
             AppRoutes {}
         }

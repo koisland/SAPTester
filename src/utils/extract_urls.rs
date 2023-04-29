@@ -1,13 +1,14 @@
-use std::{collections::HashMap, error::Error};
-
+use indexmap::IndexMap;
 use regex::Regex;
+use serde_json::Value;
+use std::error::Error;
 use ureq;
 
 use saptest::{db::record::SAPRecord, pets::pet::MIN_PET_LEVEL, SAPDB};
-pub type ItemImgUrls = HashMap<String, SAPItem>;
+pub type ItemImgUrls = IndexMap<String, SAPItem>;
 
 lazy_static::lazy_static!(
-    static ref NAME_EXCEPTIONS: HashMap<String, String> = HashMap::from(
+    static ref NAME_EXCEPTIONS: IndexMap<String, String> = IndexMap::from(
         [
             ("Popcorns".to_owned(), "Popcorn".to_owned()),
             ("Hammershark".to_owned(), "Hammerhead_Shark".to_owned())
@@ -17,6 +18,10 @@ lazy_static::lazy_static!(
 
 const BASE_FANDOM_FILE_URL: &str = "https://superautopets.fandom.com/wiki/File:";
 const RGX_MDATA_URL: &str = r"https://static.wikia.nocookie.net/superautopets/images/\w{1}/\w{2}/";
+pub const ATTACK_ICON: &str =
+    "https://static.wikia.nocookie.net/superautopets/images/a/aa/Attack_Icon.png";
+pub const HEALTH_ICON: &str =
+    "https://static.wikia.nocookie.net/superautopets/images/4/44/Health_Icon.png";
 
 #[derive(Debug, Clone)]
 pub struct SAPItem {
@@ -103,7 +108,7 @@ pub fn extract_img_url(record: SAPRecord) -> Result<(String, SAPItem), Box<dyn E
     }
 }
 
-fn extract_existing_urls(path: Option<&str>, entity: saptest::Entity) -> HashMap<String, SAPItem> {
+fn extract_existing_urls(path: Option<&str>, entity: saptest::Entity) -> IndexMap<String, SAPItem> {
     let levels = vec![MIN_PET_LEVEL.to_string()];
     let mut params = match entity {
         saptest::Entity::Pet => vec![("lvl", &levels)],
@@ -111,8 +116,16 @@ fn extract_existing_urls(path: Option<&str>, entity: saptest::Entity) -> HashMap
     };
     // Find the file path for an existing json file with the {item_name: item_icon_url}
     if let Ok(items_str) = std::fs::read_to_string(path.unwrap_or("")) {
-        let items_json: HashMap<String, String> = serde_json::from_str(&items_str).unwrap();
-        let items_list: Vec<String> = items_json.keys().cloned().collect();
+        let mut items: IndexMap<String, String> = IndexMap::new();
+        let items_json: Value = serde_json::from_str(&items_str).unwrap();
+        // Unpack value and insert in order.
+        if let Value::Object(map) = items_json {
+            for (item_name, item_img_url) in map.into_iter() {
+                items.insert(item_name, item_img_url.as_str().unwrap_or("").to_owned());
+            }
+        };
+
+        let items_list: Vec<String> = items.keys().cloned().collect();
         params.push(("name", &items_list));
         // Extract the records.
         let records = SAPDB.execute_query(entity, &params).unwrap();
@@ -124,7 +137,7 @@ fn extract_existing_urls(path: Option<&str>, entity: saptest::Entity) -> HashMap
                     SAPRecord::Pet(pet_rec) => pet_rec.name.to_string(),
                 };
                 // And construct a SAPItem storing the record and its icon.
-                let icon_url = items_json.get(&name).unwrap().to_string();
+                let icon_url = items.get(&name).unwrap().to_string();
                 (
                     name,
                     SAPItem {
@@ -141,11 +154,11 @@ fn extract_existing_urls(path: Option<&str>, entity: saptest::Entity) -> HashMap
     }
 }
 
-pub fn extract_sap_image_urls() -> HashMap<String, ItemImgUrls> {
+pub fn extract_sap_image_urls() -> IndexMap<String, ItemImgUrls> {
     let foods = extract_existing_urls(Some("data/foods.json"), saptest::Entity::Food);
     let pets = extract_existing_urls(Some("data/pets.json"), saptest::Entity::Pet);
 
-    let mut all_res = HashMap::new();
+    let mut all_res = IndexMap::new();
     all_res.insert("Pets".to_owned(), pets);
     all_res.insert("Foods".to_owned(), foods);
     // dbg!(&all_res);

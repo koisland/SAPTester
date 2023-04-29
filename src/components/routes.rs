@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_router::{Route, Router};
 
-use crate::components::{battle::Battle, footer::Footer, home::Home, nav::Nav};
+use crate::components::{battle::ui::Battle, footer::Footer, home::Home, nav::Nav};
 
 pub fn AppRoutes(cx: Scope) -> Element {
     cx.render(rsx! {

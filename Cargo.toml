@@ -10,6 +10,7 @@ axum = "0.6.16"
 dioxus = "0.3.2"
 dioxus-liveview = { version = "0.3.0", features = ["axum"] }
 dioxus-router = "0.3.0"
+indexmap = "1.9.3"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
 log = "0.4.17"
