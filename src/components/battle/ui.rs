@@ -1,18 +1,22 @@
 use dioxus::prelude::*;
 use indexmap::IndexMap;
 use saptest::Pet;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
 use crate::components::{
     battle::{
-        item_selection::GameItemsContainer,
+        fight::FightSummary,
+        item_selection::{GameItemsContainer, GameItemsFilterContainer},
         selected_pet::PetAttrContainer,
         team::TeamContainer,
-        utils::{PetProperty, TeamType},
+        utils::TeamType,
         ALLOWED_TEAM_SIZE,
     },
     tabs::TabContainer,
 };
+
+pub const FILTER_FIELDS: [&str; 3] = ["Name", "Tier", "Pack"];
+pub const FILTER_FIELD_DEFAULTS: [&str; 3] = ["", "1", "Turtle"];
 
 #[derive(Props)]
 pub struct BattleUIState<'a> {
@@ -20,7 +24,8 @@ pub struct BattleUIState<'a> {
     pub selected_pet_idx: &'a UseState<Option<usize>>,
     pub selected_item: &'a UseState<Option<String>>,
     pub selected_pet_attr: &'a UseState<String>,
-    pub teams: &'a UseState<IndexMap<String, VecDeque<(String, Pet)>>>,
+    pub filters: &'a UseRef<HashMap<&'static str, String>>,
+    pub teams: &'a UseRef<IndexMap<String, VecDeque<(String, Pet)>>>,
 }
 
 pub fn Battle(cx: Scope) -> Element {
@@ -31,9 +36,14 @@ pub fn Battle(cx: Scope) -> Element {
     // Selected pet.
     let selected_pet_idx = use_state(cx, || None);
     // Selected pet property.
-    let selected_pet_property = use_state(cx, || PetProperty::default().to_string());
+    let selected_pet_property = use_state(cx, || String::from("Stats"));
+    // Item filters.
+    let selected_filters = use_ref(cx, || {
+        let field_values = FILTER_FIELD_DEFAULTS.map(|field| field.to_owned());
+        HashMap::<&str, String>::from_iter(FILTER_FIELDS.into_iter().zip(field_values.into_iter()))
+    });
     // Stored state for pets.
-    let team_pets = use_state(cx, || {
+    let team_pets = use_ref(cx, || {
         let mut teams = IndexMap::<String, VecDeque<(String, Pet)>>::new();
         teams.insert(
             TeamType::Friend.to_string(),
@@ -52,6 +62,7 @@ pub fn Battle(cx: Scope) -> Element {
             selected_item: selected_item,
             selected_pet_idx: selected_pet_idx,
             selected_pet_attr: selected_pet_property,
+            filters: selected_filters,
             teams: team_pets
         }
     });
@@ -61,6 +72,7 @@ pub fn Battle(cx: Scope) -> Element {
             selected_item: selected_item,
             selected_pet_idx: selected_pet_idx,
             selected_pet_attr: selected_pet_property,
+            filters: selected_filters,
             teams: team_pets
         }
     });
@@ -92,15 +104,15 @@ pub fn Battle(cx: Scope) -> Element {
                     selected_tab: selected_pet_property,
                     tabs: IndexMap::from_iter([
                         (
-                            PetProperty::Stats.to_string(),
+                            String::from("Stats"),
                             pet_attr_component.clone()
                         ),
                         (
-                            PetProperty::Effect.to_string(),
+                            String::from("Effect"),
                             pet_attr_component.clone()
                         ),
                         (
-                            PetProperty::Food.to_string(),
+                            String::from("Food"),
                             pet_attr_component
                         ),
                     ])
@@ -108,17 +120,47 @@ pub fn Battle(cx: Scope) -> Element {
             }
         }
 
-        hr {}
+        br {}
 
         div {
             class: "w3-container",
-            GameItemsContainer {
-                selected_team: selected_team,
-                selected_item: selected_item,
-                selected_pet_idx: selected_pet_idx,
-                selected_pet_attr: selected_pet_property,
-                teams: team_pets
+            div {
+                class: "w3-container w3-threequarter",
+                GameItemsContainer {
+                    selected_team: selected_team,
+                    selected_item: selected_item,
+                    selected_pet_idx: selected_pet_idx,
+                    selected_pet_attr: selected_pet_property,
+                    filters: selected_filters,
+                    teams: team_pets
+                }
+            }
+            div {
+                class: "w3-container w3-quarter w3-leftbar",
+                GameItemsFilterContainer {
+                    selected_team: selected_team,
+                    selected_item: selected_item,
+                    selected_pet_idx: selected_pet_idx,
+                    selected_pet_attr: selected_pet_property,
+                    filters: selected_filters,
+                    teams: team_pets
+                },
             }
         }
+
+        br {}
+
+        FightSummary {
+            selected_team: selected_team,
+            selected_item: selected_item,
+            selected_pet_idx: selected_pet_idx,
+            selected_pet_attr: selected_pet_property,
+            filters: selected_filters,
+            teams: team_pets
+        }
+
+        // To prevent footer overlap.
+        br {}
+        br {}
     })
 }

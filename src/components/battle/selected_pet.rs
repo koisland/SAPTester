@@ -2,13 +2,13 @@ use dioxus::prelude::*;
 use log::info;
 use saptest::{
     pets::pet::{MAX_PET_LEVEL, MAX_PET_STATS, MIN_PET_LEVEL, MIN_PET_STATS},
-    Effect, Food, Statistics,
+    Effect, Statistics,
 };
 
 use crate::{
     components::battle::{
         ui::BattleUIState,
-        utils::{assign_pet_level, assign_pet_stats, get_selected_pet},
+        utils::{assign_pet_level, assign_pet_stats, get_selected_pet_property, PetProperty},
     },
     utils::extract_urls::{ATTACK_ICON, HEALTH_ICON},
 };
@@ -25,6 +25,7 @@ fn LabeledStatInput<'a>(
             class: "w3-container",
             img {
                 class: "w3-image w3-center",
+                style: "float: left;",
                 width: "10%",
                 height: "10%",
                 title: "{stat_label}",
@@ -58,22 +59,67 @@ fn LabeledStatInput<'a>(
     })
 }
 
-fn PetStatContainer<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_stats: Statistics) -> Element<'a> {
+fn PetStatContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
+    let Some(PetProperty::Stats(pet_stats)) = get_selected_pet_property(cx, "Stats") else {
+        return cx.render(rsx! {
+            div {
+                class: "w3-container",
+                h2 { "No Selected Pet" }
+            }
+        })
+    };
     cx.render(rsx! {
         form {
             class: "w3-container",
+            h2 { "Stats" }
             LabeledStatInput(cx, "Attack", pet_stats.attack, pet_stats),
             LabeledStatInput(cx, "Health", pet_stats.health, pet_stats)
         }
     })
 }
 
-fn PetEffectContainer<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_effects: &[Effect]) -> Element<'a> {
-    let Some(selected_pet) = get_selected_pet(cx) else {
+fn EffectPanel<'a>(
+    cx: Scope<'a, BattleUIState<'a>>,
+    effect: &Effect,
+    header: Option<String>,
+) -> Element<'a> {
+    let header = if let Some(header_name) = header {
+        cx.render(rsx! { li { h2 { "{header_name}" } } })
+    } else {
+        None
+    };
+    cx.render(rsx! {
+        div {
+            class: "w3-panel w3-leftbar",
+            ul {
+                class: "w3-ul",
+                header
+                li {
+                    b { "Uses: "}
+                    "{effect.uses:?}"
+                }
+                li {
+                    b { "Action: "}
+                    "{effect.action} to {effect.target:?} ({effect.position:?})"
+                }
+                li {
+                    b { "Trigger: "}
+                    "{effect.trigger.status} ({effect.trigger.position:?})"
+                }
+            }
+        }
+    })
+}
+
+fn PetEffectContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
+    let (Some(PetProperty::Effect(pet_effects)), Some(PetProperty::Level(pet_lvl))) = (
+        get_selected_pet_property(cx, "Effect"),
+        get_selected_pet_property(cx, "Level")
+    ) else {
         return cx.render(rsx! {
             div {
                 class: "w3-container",
-                "No Selected Pet"
+                h2 { "No Selected Pet" }
             }
         })
     };
@@ -85,7 +131,7 @@ fn PetEffectContainer<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_effects: &[Effec
             // Allow level selection.
             select {
                 class: "w3-select w3-center",
-                value: "{selected_pet.get_level()}",
+                value: "{pet_lvl}",
                 (MIN_PET_LEVEL..=MAX_PET_LEVEL).map(|lvl| {
                     rsx! {
                         option {
@@ -101,34 +147,33 @@ fn PetEffectContainer<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_effects: &[Effec
                 })
             }
             for effect in pet_effects.iter() {
-                div {
-                    class: "w3-panel w3-leftbar",
-                    "{effect}"
-                }
+                EffectPanel(cx, effect, None)
             }
         }
     })
 }
 
-fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_food: Option<&Food>) -> Element<'a> {
+fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
+    let Some(PetProperty::Food(pet_food)) = get_selected_pet_property(cx, "Food") else {
+        return cx.render(rsx! {
+            div {
+                class: "w3-container",
+                h2 { "No Selected Pet" }
+            }
+        })
+    };
     if let Some(food) = pet_food {
         cx.render(rsx! {
             div {
                 class: "w3-container",
-                h2 {
-                    "{food.name}"
-                }
-                div {
-                    class: "w3-panel w3-leftbar",
-                    "{food.ability}"
-                }
+                EffectPanel(cx, &food.ability, Some(food.name.to_string()))
             }
         })
     } else {
         cx.render(rsx! {
             div {
                 class: "w3-container",
-                "No Food"
+                h2 { "No Selected Food" }
             }
         })
     }
@@ -136,26 +181,17 @@ fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_food: Option<&Food
 
 pub fn PetAttrContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let selected_pet_attr = cx.props.selected_pet_attr.get();
-    let Some(selected_pet) = get_selected_pet(cx) else {
-        return cx.render(rsx! {
-            div {
-                class: "w3-container w3-border",
-                "No Selected Pet"
-            }
-        })
-    };
 
     cx.render(rsx! {
         div {
-            class: "w3-container w3-border",
-            style: "overflow: scroll;",
+            class: "w3-container ",
 
             if selected_pet_attr == "Stats" {
-                PetStatContainer(cx, selected_pet.stats)
+                PetStatContainer(cx)
             } else if selected_pet_attr == "Effect" {
-                PetEffectContainer(cx, &selected_pet.effect)
+                PetEffectContainer(cx)
             } else {
-                PetFoodContainer(cx, selected_pet.item.as_ref())
+                PetFoodContainer(cx)
             }
         }
     })

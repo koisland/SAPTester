@@ -12,22 +12,28 @@ use crate::{
 
 pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
     let _img_hover_css = css!("img:hover { opacity: 0.7 }");
-    let teams = &cx.props.teams.get();
+    let teams = &cx.props.teams.read();
     let Some(selected_team_pets) = teams.get(cx.props.selected_team.get()) else {
         return cx.render(rsx! { "Failed to get team pets for {cx.props.selected_team}"})
     };
 
-    // TODO: Make position of tab button and its contents fixed so can always see when scrolling.
     cx.render(rsx! {
         table {
-            class: "w3-table w3-striped w3-border w3-responsive w3-white",
-            style: "overflow: scroll;",
+            class: "w3-table w3-responsive w3-white",
+            style: "display: inline-block;",
             tr {
+                if selected_team_pets.is_empty() {
+                    cx.render(rsx! {
+                        h2 {
+                            "Click a pet to add it to a team!"
+                        }
+                    })
+                }
                 // Pets are added in reverse order to keep frontmost pet at rightside of table row.
                 for (i, (pet_img_url, pet)) in selected_team_pets.iter().enumerate() {
                     td {
                         class: if Some(i) == **cx.props.selected_pet_idx {
-                            "w3-border w3-red {_img_hover_css}"
+                            " w3-red {_img_hover_css}"
                         } else {
                             "{img_hover_css}"
                         },
@@ -77,22 +83,19 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
     "
     );
 
-    let pet = cx
-        .props
-        .teams
-        .get()
-        .get(cx.props.selected_team.get())
-        .and_then(|team| team.get(pet_idx));
+    let pet_item = cx.props.teams.with(|teams| {
+        teams
+            .get(cx.props.selected_team.get())
+            .and_then(|team| team.get(pet_idx))
+            .and_then(|(_, pet)| {
+                pet.item.as_ref().map(|item| {
+                    // Safe to access as assertion at init ensures foods and pets exist.
+                    SAP_ITEM_IMG_URLS["Foods"].get(&item.name.to_string())
+                })
+            })
+    });
 
-    // Safe to unwrap as assertion at init ensures foods and pets exist.
-    if let Some(Some(item)) = pet.and_then(|(_, pet)| {
-        pet.item.as_ref().map(|item| {
-            SAP_ITEM_IMG_URLS
-                .get("Foods")
-                .unwrap()
-                .get(&item.name.to_string())
-        })
-    }) {
+    if let Some(Some(item)) = pet_item {
         cx.render(rsx! {
             img {
                 class: "w3-image {item_icon_css}",
@@ -107,10 +110,6 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
             }
         })
     } else {
-        cx.render(rsx! {
-            p {
-                "None"
-            }
-        })
+        None
     }
 }

@@ -1,10 +1,17 @@
+use dioxus::prelude::Scope;
 use indexmap::IndexMap;
 use regex::Regex;
 use serde_json::Value;
-use std::error::Error;
+use std::{error::Error, str::FromStr};
 use ureq;
 
-use saptest::{db::record::SAPRecord, pets::pet::MIN_PET_LEVEL, SAPDB};
+use saptest::{
+    db::{pack::Pack, record::SAPRecord},
+    pets::pet::MIN_PET_LEVEL,
+    SAPDB,
+};
+
+use crate::components::battle::ui::BattleUIState;
 pub type ItemImgUrls = IndexMap<String, SAPItem>;
 
 lazy_static::lazy_static!(
@@ -47,15 +54,15 @@ impl SAPItem {
             SAPRecord::Pet(pet_rec) => pet_rec.effect.clone().unwrap_or("None".to_owned()),
         }
     }
-    pub fn get_pack(&self) -> String {
+    pub fn get_pack(&self) -> Pack {
         match &self.record {
-            SAPRecord::Food(food_rec) => food_rec.pack.to_string(),
-            SAPRecord::Pet(pet_rec) => pet_rec.pack.to_string(),
+            SAPRecord::Food(food_rec) => food_rec.pack.clone(),
+            SAPRecord::Pet(pet_rec) => pet_rec.pack.clone(),
         }
     }
 
-    pub fn is_pack(&self, pack: &str) -> bool {
-        self.get_pack() == pack
+    pub fn is_pack(&self, pack: &str) -> Result<bool, Box<dyn Error>> {
+        Ok(self.get_pack() == Pack::from_str(pack)?)
     }
 
     pub fn is_holdable(&self) -> bool {
@@ -63,6 +70,42 @@ impl SAPItem {
             SAPRecord::Food(food_rec) => food_rec.holdable,
             SAPRecord::Pet(_) => false,
         }
+    }
+
+    pub fn get_tier(&self) -> usize {
+        match &self.record {
+            SAPRecord::Food(food_rec) => food_rec.tier,
+            SAPRecord::Pet(pet_rec) => pet_rec.tier,
+        }
+    }
+
+    pub fn is_tier(&self, tier: usize) -> bool {
+        self.get_tier() == tier
+    }
+
+    pub fn is_valid_item<'a>(&self, cx: Scope<'a, BattleUIState<'a>>) -> bool {
+        cx.props.filters.with(|filters| {
+            filters
+                .iter()
+                .map(|(filter_name, filter_val)| {
+                    if *filter_name == "Name" {
+                        let name = self.get_name().to_lowercase();
+                        let filter_val = filter_val.to_lowercase();
+                        Ok(if filter_val.is_empty() {
+                            true
+                        } else {
+                            name.contains(&filter_val)
+                        })
+                    } else if *filter_name == "Tier" {
+                        let tier = filter_val.parse::<usize>()?;
+                        Ok(self.is_tier(tier))
+                    } else {
+                        self.is_pack(filter_val)
+                            .map_err(Into::<Box<dyn Error>>::into)
+                    }
+                })
+                .all(|value| value.unwrap_or(false))
+        })
     }
 }
 
