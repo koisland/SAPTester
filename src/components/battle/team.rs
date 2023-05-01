@@ -29,6 +29,9 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
                         h2 {
                             "Click a pet to add it to a team!"
                         }
+                        h3 {
+                            "Empty slots located in \"Unknown\" pack at tier 0."
+                        }
                     })
                 }
                 // Pets are added in reverse order to keep frontmost pet at rightside of table row.

@@ -5,5 +5,6 @@ pub mod team;
 pub mod ui;
 pub mod utils;
 
-pub const ALLOWED_TEAM_SIZE: usize = 6;
+pub const ALLOWED_TEAM_SIZE: usize = 5;
 pub const MAX_PET_TIER: usize = 6;
+pub const MAX_TURN_LIMIT: usize = 100;
