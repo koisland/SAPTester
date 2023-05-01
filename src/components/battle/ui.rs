@@ -17,6 +17,7 @@ use crate::components::{
 
 pub const FILTER_FIELDS: [&str; 3] = ["Name", "Tier", "Pack"];
 pub const FILTER_FIELD_DEFAULTS: [&str; 3] = ["", "1", "Turtle"];
+type SlotImgs = VecDeque<(String, Option<Pet>)>;
 
 #[derive(Props)]
 pub struct BattleUIState<'a> {
@@ -25,7 +26,7 @@ pub struct BattleUIState<'a> {
     pub selected_item: &'a UseState<Option<String>>,
     pub selected_pet_attr: &'a UseState<String>,
     pub filters: &'a UseRef<HashMap<&'static str, String>>,
-    pub teams: &'a UseRef<IndexMap<String, VecDeque<(String, Pet)>>>,
+    pub teams: &'a UseRef<IndexMap<String, SlotImgs>>,
 }
 
 pub fn Battle(cx: Scope) -> Element {
@@ -44,7 +45,7 @@ pub fn Battle(cx: Scope) -> Element {
     });
     // Stored state for pets.
     let team_pets = use_ref(cx, || {
-        let mut teams = IndexMap::<String, VecDeque<(String, Pet)>>::new();
+        let mut teams = IndexMap::<String, VecDeque<(String, Option<Pet>)>>::new();
         teams.insert(
             TeamType::Friend.to_string(),
             VecDeque::with_capacity(ALLOWED_TEAM_SIZE),

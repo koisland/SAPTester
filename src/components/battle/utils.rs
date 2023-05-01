@@ -1,7 +1,7 @@
 use std::{error::Error, str::FromStr};
 
 use dioxus::prelude::*;
-use saptest::{db::record::SAPRecord, Effect, Food, FoodName, Pet, Statistics};
+use saptest::{db::record::SAPRecord, Effect, Food, FoodName, Pet, PetName, Statistics};
 
 use crate::{components::battle::ui::BattleUIState, utils::extract_urls::SAPItem};
 
@@ -43,6 +43,9 @@ pub fn get_selected_pet_property(
                 return None
             };
             team.get(*pet_idx).map(|(_, pet)| {
+                let Some(pet) = pet else {
+                    return None
+                };
                 match property_name {
                     "Stats" => Some(PetProperty::Stats(pet.stats)),
                     "Effect" => Some(PetProperty::Effect(pet.effect.clone())),
@@ -88,12 +91,16 @@ pub fn add_pet_to_team(
         .with(|teams| teams.get(selected_team).map(|teams| teams.len()));
 
     if team_size.filter(|size| *size < ALLOWED_TEAM_SIZE).is_some() {
-        let pet = Pet::new(pet_record.name.clone(), None, 1)?;
+        let slot = if let PetName::Custom(_) = pet_record.name {
+            None
+        } else {
+            Some(Pet::new(pet_record.name.clone(), None, 1)?)
+        };
 
         // Get a mut handle to the selected team pets.
         cx.props.teams.with_mut(|teams| {
             if let Some(selected_team) = teams.get_mut(selected_team) {
-                selected_team.push_front((item_info.icon.to_string(), pet))
+                selected_team.push_front((item_info.icon.to_string(), slot))
             }
         })
     }
@@ -127,9 +134,10 @@ pub fn assign_food_to_pet(
         None
     };
     cx.props.teams.with_mut(|teams| {
-        let Some(Some((_, selected_pet))) = teams
+        let Some((_, Some(selected_pet))) = teams
             .get_mut(selected_team)
-            .map(|team| team.get_mut(pet_idx)) else
+            .and_then(|team| team.get_mut(pet_idx))
+            else
         {
             return Err("Cannot access pet".into())
         };
@@ -148,9 +156,10 @@ pub fn assign_pet_stats<'a>(
     };
 
     cx.props.teams.with_mut(|teams| {
-        let Some(Some((_, selected_pet))) = teams
+        let Some((_, Some(selected_pet))) = teams
             .get_mut(selected_team)
-            .map(|team| team.get_mut(*selected_pet_idx)) else
+            .and_then(|team| team.get_mut(*selected_pet_idx))
+            else
         {
             return Err("Cannot access pet".into())
         };
@@ -169,9 +178,10 @@ pub fn assign_pet_level<'a>(
     };
 
     cx.props.teams.with_mut(|teams| {
-        let Some(Some((_, selected_pet))) = teams
+        let Some((_, Some(selected_pet))) = teams
             .get_mut(selected_team)
-            .map(|team| team.get_mut(*selected_pet_idx)) else
+            .and_then(|team| team.get_mut(*selected_pet_idx))
+            else
         {
             return Err("Cannot access pet".into())
         };

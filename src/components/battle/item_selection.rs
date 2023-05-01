@@ -173,7 +173,7 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
                             });
                         });
                     },
-                    [Pack::Turtle, Pack::Puppy, Pack::Star, Pack::Weekly].into_iter().map(|pack| {
+                    [Pack::Turtle, Pack::Puppy, Pack::Star, Pack::Weekly, Pack::Unknown].into_iter().map(|pack| {
                         let pack = pack.to_string();
                         cx.render(rsx! {
                             option {

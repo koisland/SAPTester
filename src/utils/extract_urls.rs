@@ -90,6 +90,11 @@ impl SAPItem {
                 .map(|(filter_name, filter_val)| {
                     if *filter_name == "Name" {
                         let name = self.get_name().to_lowercase();
+                        // If empty slot, allow.
+                        if name == "Slot" {
+                            return Ok(true);
+                        };
+
                         let filter_val = filter_val.to_lowercase();
                         Ok(if filter_val.is_empty() {
                             true

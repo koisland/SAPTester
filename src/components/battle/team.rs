@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use log::info;
+use saptest::PetName;
 use sir::css;
 
 use crate::{
@@ -16,6 +17,7 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
     let Some(selected_team_pets) = teams.get(cx.props.selected_team.get()) else {
         return cx.render(rsx! { "Failed to get team pets for {cx.props.selected_team}"})
     };
+    let empty_slot_pet = PetName::Custom("Empty".to_owned());
 
     cx.render(rsx! {
         table {
@@ -43,7 +45,7 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
                         img {
                             class: "w3-image",
                             src: "{pet_img_url}",
-                            title: "{pet.name}",
+                            title: "{pet.as_ref().map_or(&empty_slot_pet, |pet| &pet.name)}",
                             // Starting pet.
                             ondragstart: move |_| cx.props.selected_pet_idx.set(Some(i)),
                             // Assign item to pet.
@@ -88,10 +90,14 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
             .get(cx.props.selected_team.get())
             .and_then(|team| team.get(pet_idx))
             .and_then(|(_, pet)| {
-                pet.item.as_ref().map(|item| {
-                    // Safe to access as assertion at init ensures foods and pets exist.
-                    SAP_ITEM_IMG_URLS["Foods"].get(&item.name.to_string())
-                })
+                if let Some(pet) = pet.as_ref() {
+                    pet.item.as_ref().map(|item| {
+                        // Safe to access as assertion at init ensures foods and pets exist.
+                        SAP_ITEM_IMG_URLS["Foods"].get(&item.name.to_string())
+                    })
+                } else {
+                    None
+                }
             })
     });
 
