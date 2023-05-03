@@ -1,23 +1,2 @@
-[package]
-name = "saptester"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-axum = "0.6.16"
-dioxus = "0.3.2"
-dioxus-liveview = { version = "0.3.0", features = ["axum"] }
-dioxus-router = "0.3.0"
-indexmap = "1.9.3"
-itertools = "0.10.5"
-lazy_static = "1.4.0"
-log = "0.4.17"
-regex = "1.8.1"
-saptest = "0.4.5"
-serde = "1.0.160"
-serde_json = "1.0.96"
-sir = { version = "0.3.0", features = ["dioxus"] }
-tokio = { version = "1.27.0", features = ["full"] }
-ureq = "2.6.2"
+[workspace]
+members = ["backend", "frontend"]

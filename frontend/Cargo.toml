@@ -1,0 +1,16 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dioxus = { version = "0.2.4", features = ["web", "router"] }
+dioxus-router = "*"
+log = "0.4.6"
+sir = { version = "0.2.2", features = [ "dioxus" ] }
+lazy_static = "1.4.0"
+indexmap = "1.9.3"
+
+# WebAssembly Debug
+wasm-logger = "0.2.0"
+console_error_panic_hook = "0.1.7"

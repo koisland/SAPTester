@@ -1,0 +1,40 @@
+{
+    "friend_team": {
+        "name": "The Super Auto Pets",
+        "pets": [
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            },
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            }
+        ]
+    },
+    "enemy_team": {
+        "name": "The Super Auto Pets 2",
+        "pets": [
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            },
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            }
+        ]
+    }
+}
