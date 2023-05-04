@@ -1,14 +1,9 @@
 use dioxus::prelude::*;
 use log::info;
-use saptest::{
-    pets::pet::{MAX_PET_LEVEL, MAX_PET_STATS, MIN_PET_LEVEL, MIN_PET_STATS},
-    Effect, Statistics,
-};
 
 use crate::{
     components::battle::{
         ui::BattleUIState,
-        utils::{assign_pet_level, assign_pet_stats, get_selected_pet_property, PetProperty},
     },
     utils::extract_urls::{ATTACK_ICON, HEALTH_ICON},
 };

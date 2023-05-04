@@ -1,19 +1,16 @@
 use dioxus::prelude::*;
 use log::info;
-use saptest::PetName;
 use sir::css;
 
 use crate::{
     components::battle::{
         ui::BattleUIState,
-        utils::{assign_food_to_pet, remove_pet_from_team, swap_pet_on_team},
     },
     SAP_ITEM_IMG_URLS,
 };
 
 pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
     let _img_hover_css = css!("img:hover { opacity: 0.7 }");
-    let empty_slot_pet = PetName::Custom("Empty".to_owned());
 
     cx.props.teams.with(|teams| {
         if let Some(selected_team_pets) = teams.get(cx.props.selected_team.get()) {
@@ -41,7 +38,7 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
                                     "{_img_hover_css}"
                                 },
                                 // Include image of item icon.
-                                PetItemIcon(cx, i)
+                                // PetItemIcon(cx, i)
 
                                 img {
                                     class: "w3-image",
@@ -108,9 +105,9 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
                 // On item double click, remove item.
                 ondblclick: move |_| {
                     // And remove item.
-                    if let Err(err) = assign_food_to_pet(cx, pet_idx, None) {
-                        info!("{err}")
-                    }
+                    // if let Err(err) = assign_food_to_pet(cx, pet_idx, None) {
+                    //     info!("{err}")
+                    // }
                 }
             }
         })

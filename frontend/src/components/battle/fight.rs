@@ -2,26 +2,8 @@ use std::error::Error;
 
 use dioxus::prelude::*;
 use itertools::Itertools;
-use saptest::{teams::team::TeamFightOutcome, Team, TeamCombat};
 
 use super::{ui::BattleUIState, ALLOWED_TEAM_SIZE, MAX_TURN_LIMIT};
-
-#[derive(Debug)]
-pub struct PostBattleState {
-    pub outcome: TeamFightOutcome,
-    pub friend_team: Option<Team>,
-    pub enemy_team: Option<Team>,
-}
-
-impl Default for PostBattleState {
-    fn default() -> Self {
-        Self {
-            outcome: TeamFightOutcome::None,
-            friend_team: Default::default(),
-            enemy_team: Default::default(),
-        }
-    }
-}
 
 pub fn setup_team_fight<'a>(
     cx: Scope<'a, BattleUIState<'a>>,

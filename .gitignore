@@ -1,5 +1,4 @@
-/target
+/target/
 /sap.db
-/dist
-/data
+/dist/
 /*.log

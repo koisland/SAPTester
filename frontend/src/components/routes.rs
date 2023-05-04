@@ -1,17 +1,18 @@
 use dioxus::prelude::*;
 use dioxus_router::{Route, Router};
 
-use crate::components::{battle::ui::Battle, footer::Footer, home::Home, nav::Nav};
+use crate::components::{footer::Footer, home::Home, nav::Nav};
 
 pub fn AppRoutes(cx: Scope) -> Element {
     cx.render(rsx! {
         Router {
             Nav {},
-            for _ in 0..3 {
-                br {}
-            }
+            br {}
+            br {}
+            br {}
+
             Route { to: "/home" , Home {} },
-            Route { to: "/battle" , Battle {} },
+            Route { to: "/battle" },
             Route { to: "/about" }
             Footer {}
         }

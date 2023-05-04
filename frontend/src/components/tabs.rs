@@ -8,6 +8,7 @@ pub struct TabState<'a> {
     pub tabs: IndexMap<String, Element<'a>>,
 }
 
+#[allow(dead_code)]
 pub fn TabContainer<'a>(cx: Scope<'a, TabState<'a>>) -> Element {
     cx.render(rsx! {
         div {
@@ -20,15 +21,17 @@ pub fn TabContainer<'a>(cx: Scope<'a, TabState<'a>>) -> Element {
                 }
                 div {
                     class: "w3-dropdown-content",
-                    for tab in cx.props.tabs.keys() {
-                        button {
-                            class: "w3-button",
-                            onclick: move |_| cx.props.selected_tab.set(tab.clone()),
-                            "{tab}"
-                        }
-                        br {}
-                    }
 
+                    cx.props.tabs.keys().map(|tab| {
+                        cx.render(rsx! {
+                            button {
+                                class: "w3-button",
+                                onclick: move |_| cx.props.selected_tab.set(tab.clone()),
+                                "{tab}"
+                            }
+                            br {}
+                        })
+                    })
                 }
             }
             if let Some(selected_tab_contents) = cx.props.tabs.get(cx.props.selected_tab.get()) {

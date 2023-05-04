@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.16"
-clap = "4.2.7"
+clap = { version = "4.2.7", features = ["derive"] }
 indexmap = "1.9.3"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
