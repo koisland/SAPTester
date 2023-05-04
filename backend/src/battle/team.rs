@@ -2,7 +2,7 @@ use itertools::Itertools;
 use saptest::{
     error::SAPTestError,
     pets::pet::{MAX_PET_LEVEL, MAX_PET_STATS, MIN_PET_LEVEL, MIN_PET_STATS},
-    Food, FoodName, Pet, PetName, Statistics, Team,
+    Food, FoodName, Pet, PetName, Team,
 };
 use serde::Deserialize;
 use std::str::FromStr;
@@ -16,11 +16,17 @@ pub struct Teams {
 }
 
 #[derive(Deserialize)]
+pub struct SimpleTeam {
+    name: String,
+    pets: Vec<Option<SimplePet>>,
+}
+
+#[derive(Deserialize)]
 pub struct SimplePet {
     pub name: String,
-    pub attack: usize,
-    pub health: usize,
-    pub level: usize,
+    pub attack: Option<usize>,
+    pub health: Option<usize>,
+    pub level: Option<usize>,
     pub item: Option<String>,
 }
 
@@ -28,33 +34,29 @@ impl TryFrom<SimplePet> for Pet {
     type Error = SAPTestError;
 
     fn try_from(simple_pet: SimplePet) -> Result<Self, Self::Error> {
-        let (attack, health) = (
-            simple_pet.attack.try_into().unwrap_or_default(),
-            simple_pet.health.try_into().unwrap_or_default(),
-        );
-        let mut stats = Statistics { attack, health };
-        // Clamp stats to 0 to 50.
-        stats.clamp(MIN_PET_STATS, MAX_PET_STATS);
-
         let item = simple_pet
             .item
             .and_then(|item_name| FoodName::from_str(&item_name).ok())
             .and_then(|item_name| Food::try_from(item_name).ok());
 
-        let pet_lvl = simple_pet.level.clamp(MIN_PET_LEVEL, MAX_PET_LEVEL);
+        let pet_lvl = simple_pet
+            .level
+            .map_or(1, |lvl| lvl.clamp(MIN_PET_LEVEL, MAX_PET_LEVEL));
         PetName::from_str(&simple_pet.name)
-            .and_then(|pet_name| Pet::new(pet_name, Some(stats), pet_lvl))
+            .and_then(|pet_name| Pet::new(pet_name, None, pet_lvl))
             .map(|mut pet| {
+                //  Assign item.
                 pet.item = item;
+                // Assign stats if given.
+                if let Some(Ok(attack)) = simple_pet.attack.map(TryInto::<isize>::try_into) {
+                    pet.stats.attack = attack.clamp(MIN_PET_STATS, MAX_PET_STATS)
+                }
+                if let Some(Ok(health)) = simple_pet.health.map(TryInto::<isize>::try_into) {
+                    pet.stats.health = health.clamp(MIN_PET_STATS, MAX_PET_STATS)
+                }
                 pet
             })
     }
-}
-
-#[derive(Deserialize)]
-pub struct SimpleTeam {
-    name: String,
-    pets: Vec<Option<SimplePet>>,
 }
 
 impl TryFrom<SimpleTeam> for Team {

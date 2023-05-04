@@ -10,7 +10,7 @@ mod battle;
 
 #[tokio::main]
 async fn main() {
-    simple_logging::log_to_file("backend.log", LevelFilter::Info).unwrap();
+    simple_logging::log_to_file("backend.log", LevelFilter::Error).unwrap();
 
     let addr: std::net::SocketAddr = ([127, 0, 0, 1], 3030).into();
 

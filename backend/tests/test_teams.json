@@ -10,6 +10,9 @@
                 "item": "Honey"
             },
             {
+                "name": "Slot"
+            },
+            {
                 "name": "Dog",
                 "attack": 3,
                 "health": 4,
