@@ -8,13 +8,14 @@ use clap::Parser;
 )]
 pub struct Args {
     /// The HTTP listening address.
-    #[clap(short = 'a', long = "addr", default_value = "::1")]
+    #[clap(short = 'a', long = "addr", default_value = "127.0.0.1")]
     pub addr: String,
 
     /// The HTTP listening port.
-    #[clap(short = 'p', long = "port", default_value = "8080")]
+    #[clap(short = 'p', long = "port", default_value = "3030")]
     pub port: u16,
-    // /// The logging level.
-    // #[clap(short = 'l', long = "log", default_value = "info")]
-    // log_level: String,
+
+    /// The logging level.
+    #[clap(short = 'l', long = "log", default_value = "info")]
+    pub log_level: String,
 }

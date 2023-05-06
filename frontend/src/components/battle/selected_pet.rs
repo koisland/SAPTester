@@ -39,8 +39,8 @@ fn LabeledStatInput<'a>(
                         is_valid_state.set(true);
                         // Assign pet stats.
                         let stats = Statistics {
-                            attack:  if stat_label == "Attack" { *input_stat_value } else { pet_stats.attack },
-                            health:  if stat_label == "Health" { *input_stat_value } else { pet_stats.health }
+                            attack: if stat_label == "Attack" { *input_stat_value } else { pet_stats.attack },
+                            health: if stat_label == "Health" { *input_stat_value } else { pet_stats.health }
                         };
                         if let Err(err) = assign_pet_stats(cx, stats) {
                             info!("{err}")

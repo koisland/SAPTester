@@ -6,34 +6,33 @@ mod components;
 mod utils;
 
 use dioxus::prelude::*;
+use dioxus_router::{Route, Router};
 use indexmap::IndexMap;
-use lazy_static::lazy_static;
-use sir::{global_css, AppStyle};
 
-use crate::components::routes::AppRoutes;
-use crate::utils::extract_urls::extract_sap_image_urls;
+use once_cell::sync::OnceCell;
+use sir::global_css;
+use utils::extract_urls::ItemRecords;
+
+use crate::components::battle::ui::Battle;
+use crate::components::footer::Footer;
+use crate::components::home::Home;
+use crate::components::nav::Nav;
+// use crate::components::routes::AppRoutes;
+use crate::utils::extract_urls::get_all_sap_records;
 
 pub const EMPTY_SLOT_IMG: &str = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Empty_set_symbol.svg/200px-Empty_set_symbol.svg.png";
-
-lazy_static! {
-    static ref SAP_ITEM_IMG_URLS: IndexMap<String, IndexMap<String, String>> = {
-        let mut img_urls = extract_sap_image_urls();
-        img_urls["Pets"].insert("Slot".to_string(), EMPTY_SLOT_IMG.to_string());
-        img_urls
-    };
-}
 
 fn main() {
     // Init debug tool for WebAssembly.
     wasm_logger::init(wasm_logger::Config::default());
     console_error_panic_hook::set_once();
-
-    dioxus::web::launch(App);
+    dioxus_web::launch(App);
 }
 
+pub type SAPRecords = IndexMap<String, ItemRecords>;
+static RECORDS: OnceCell<SAPRecords> = OnceCell::new();
+
 pub fn App(cx: Scope) -> Element {
-    // assert!(SAP_ITEM_IMG_URLS.contains_key("Pets"));
-    // assert!(SAP_ITEM_IMG_URLS.contains_key("Foods"));
     global_css!(
         r#"
         html,body,h1,h2,h3,h4,h5 {
@@ -41,13 +40,12 @@ pub fn App(cx: Scope) -> Element {
         }
     "#
     );
-    // let fut = use_future(cx, (), |_| async move {
-    //     reqwest::get("https://dog.ceo/api/breeds/image/random/")
-    //         .await
-    //         .unwrap()
-    //         .json::<DogApi>()
-    //         .await
-    // });
+
+    if let Some(Ok(item_img_urls)) =
+        use_future(cx, (), |_| async move { get_all_sap_records().await }).value()
+    {
+        let _ = RECORDS.set(item_img_urls.to_owned());
+    };
 
     // https://www.w3schools.com/w3css/tryit.asp?filename=tryw3css_templates_analytics&stacked=h
     cx.render(rsx!{
@@ -63,10 +61,19 @@ pub fn App(cx: Scope) -> Element {
             rel:"stylesheet",
             href:"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
         }
-        AppStyle {},
         body {
             class: "w3-white",
-            AppRoutes {}
+            Router {
+                Nav {},
+                br {}
+                br {}
+                br {}
+
+                Route { to: "/home" , Home {} },
+                Route { to: "/battle"  Battle {} },
+                Route { to: "/about" }
+                Footer {}
+            }
         }
     })
 }

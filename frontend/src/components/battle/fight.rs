@@ -3,7 +3,7 @@ use std::error::Error;
 use dioxus::prelude::*;
 use itertools::Itertools;
 
-use super::{ui::BattleUIState, ALLOWED_TEAM_SIZE, MAX_TURN_LIMIT};
+use super::{ui::BattleUIState, ALLOWED_TEAM_SIZE};
 
 pub fn setup_team_fight<'a>(
     cx: Scope<'a, BattleUIState<'a>>,
@@ -112,8 +112,8 @@ pub fn FightSummaryModal<'a>(
 }
 
 pub fn FightSummary<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
-    let summary_state = use_state(cx, || "none");
-    let post_battle_outcome = use_ref(cx, PostBattleState::default);
+    let summary_state = use_state(&cx, || "none");
+    let post_battle_outcome = use_ref(&cx, PostBattleState::default);
     cx.render(rsx! {
         div {
             class: "w3-container w3-xlarge",

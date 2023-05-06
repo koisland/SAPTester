@@ -29,7 +29,7 @@ impl Default for BattleResponse {
     }
 }
 
-pub async fn battle(Json(teams): Json<Teams>) -> Json<BattleResponse> {
+pub async fn post_battle(Json(teams): Json<Teams>) -> Json<BattleResponse> {
     let mut resp = BattleResponse::default();
     let friend_team: Result<Team, SAPTestError> = teams.friend_team.try_into();
     let enemy_team: Result<Team, SAPTestError> = teams.enemy_team.try_into();

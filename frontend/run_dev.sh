@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-dioxus serve
+dioxus serve --port $1

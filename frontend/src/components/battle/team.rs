@@ -1,13 +1,7 @@
 use dioxus::prelude::*;
-use log::info;
 use sir::css;
 
-use crate::{
-    components::battle::{
-        ui::BattleUIState,
-    },
-    SAP_ITEM_IMG_URLS,
-};
+use crate::components::battle::ui::BattleUIState;
 
 pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
     let _img_hover_css = css!("img:hover { opacity: 0.7 }");
@@ -28,47 +22,52 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
                                     "Empty slots located in \"Unknown\" pack at tier 0."
                                 }
                             })
+                        } else {
+                            None
                         }
                         // Pets are added in reverse order to keep frontmost pet at rightside of table row.
-                        for (i, (pet_img_url, pet)) in selected_team_pets.iter().enumerate() {
-                            td {
-                                class: if Some(i) == **cx.props.selected_pet_idx {
-                                    " w3-red {_img_hover_css}"
-                                } else {
-                                    "{_img_hover_css}"
-                                },
-                                // Include image of item icon.
-                                // PetItemIcon(cx, i)
-
-                                img {
-                                    class: "w3-image",
-                                    src: "{pet_img_url}",
-                                    title: "{pet.as_ref().map_or(&empty_slot_pet, |pet| &pet.name)}",
-                                    // Starting pet.
-                                    ondragstart: move |_| cx.props.selected_pet_idx.set(Some(i)),
-                                    // Assign item to pet.
-                                    ondragenter: move |_| {
-                                        // If user is dragging an item.
-                                        if cx.props.selected_item.get().is_some() {
-                                            if let Err(err) = assign_food_to_pet(cx, i, cx.props.selected_item.get().as_ref()) {
-                                                info!("{err}")
-                                            }
-                                        } else {
-                                            // Otherwise, move pets.
-                                            if let Some(from_idx) = cx.props.selected_pet_idx.get() {
-                                                if let Err(err) = swap_pet_on_team(cx, *from_idx, i) {
-                                                    info!("{err}")
-                                                }
-                                            }
-                                        }
-                                    },
-                                    // Remove pet.
-                                    ondblclick: move |_| remove_pet_from_team(cx, i),
-                                    // Set pet as current.
-                                    onclick: move |_| cx.props.selected_pet_idx.set(Some(i))
+                        selected_team_pets.iter().enumerate().map(|(i, (pet_img_url, _))| {
+                            cx.render(rsx! {
+                                td {
+                                    class: "w3-red",
+                                    // class: if Some(i) == **cx.props.selected_pet_idx {
+                                    //     "w3-red {_img_hover_css}"
+                                    // } else {
+                                    //     "{_img_hover_css}"
+                                    // },
+                                    PetItemIcon(cx, i)
+                                    img {
+                                        class: "w3-image",
+                                        src: "{pet_img_url}",
+                                        // title: "{pet.as_ref().map_or(&empty_slot_pet, |pet| &pet.name)}",
+                                        // Starting pet.
+                                        ondragstart: move |_| cx.props.selected_pet_idx.set(Some(i)),
+                                        // Assign item to pet.
+                                        ondragenter: move |_| {
+                                            // // If user is dragging an item.
+                                            // if cx.props.selected_item.get().is_some() {
+                                            //     // if let Err(err) = assign_food_to_pet(cx, i, cx.props.selected_item.get().as_ref()) {
+                                            //     //     info!("{err}")
+                                            //     // }
+                                            // } else {
+                                            //     // Otherwise, move pets.
+                                            //     if let Some(from_idx) = cx.props.selected_pet_idx.get() {
+                                            //         // if let Err(err) = swap_pet_on_team(cx, *from_idx, i) {
+                                            //         //     info!("{err}")
+                                            //         // }
+                                            //     }
+                                            // }
+                                        },
+                                        // Remove pet.
+                                        ondblclick: move |_| {
+                                            // remove_pet_from_team(cx, i)
+                                        },
+                                        // Set pet as current.
+                                        onclick: move |_| cx.props.selected_pet_idx.set(Some(i))
+                                    }
                                 }
-                            }
-                        }
+                            })
+                        })
                     }
                 }
             })
@@ -85,23 +84,14 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
         teams
             .get(cx.props.selected_team.get())
             .and_then(|team| team.get(pet_idx))
-            .and_then(|(_, pet)| {
-                if let Some(pet) = pet.as_ref() {
-                    pet.item.as_ref().map(|item| {
-                        // Safe to access as assertion at init ensures foods and pets exist.
-                        SAP_ITEM_IMG_URLS["Foods"].get(&item.name.to_string())
-                    })
-                } else {
-                    None
-                }
-            })
+            .and_then(|(_, pet)| pet.as_ref().cloned())
     });
 
-    if let Some(Some(item)) = pet_item {
+    if let Some(item) = pet_item {
         cx.render(rsx! {
             img {
                 class: "w3-image {item_icon_css}",
-                src: "{item.icon}",
+                src: "{item}",
                 // On item double click, remove item.
                 ondblclick: move |_| {
                     // And remove item.

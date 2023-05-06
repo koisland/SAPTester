@@ -3,36 +3,38 @@ use std::{
     str::FromStr,
 };
 
+use axum::Router;
 use clap::Parser;
-
-use axum::{
-    routing::{get, post},
-    Router,
-};
 use log::LevelFilter;
 
-mod api;
 mod args;
 mod battle;
+mod db;
+mod routes;
 
-use crate::{api::db::db, args::Args, battle::response::battle};
+use crate::{
+    args::Args,
+    routes::{battle_routes, db_routes},
+};
 
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
 
-    simple_logging::log_to_file("backend.log", LevelFilter::Error).unwrap();
+    simple_logging::log_to_file(
+        "backend.log",
+        LevelFilter::from_str(&args.log_level).unwrap(),
+    )
+    .unwrap();
 
     let addr: SocketAddr = SocketAddr::from((
         IpAddr::from_str(args.addr.as_str()).unwrap_or(IpAddr::V6(Ipv6Addr::LOCALHOST)),
         args.port,
     ));
 
-    let app = Router::new()
-        .route("/battle", post(battle))
-        .route("/db", get(db));
+    let app = Router::new().merge(db_routes()).merge(battle_routes());
 
-    println!("Listening on http://{addr}");
+    log::info!("Listening on http://{addr}");
 
     axum::Server::bind(&addr.to_string().parse().unwrap())
         .serve(app.into_make_service())

@@ -1,15 +1,15 @@
 use dioxus::prelude::*;
 use indexmap::IndexMap;
-use saptest::Pet;
 use std::collections::{HashMap, VecDeque};
 
 use crate::components::{
     battle::{
-        fight::FightSummary,
         item_selection::{GameItemsContainer, GameItemsFilterContainer},
-        selected_pet::PetAttrContainer,
+        // fight::FightSummary,
+        // item_selection::{GameItemsContainer, GameItemsFilterContainer},
+        // selected_pet::PetAttrContainer,
         team::TeamContainer,
-        utils::TeamType,
+        // utils::TeamType,
         ALLOWED_TEAM_SIZE,
     },
     tabs::TabContainer,
@@ -17,7 +17,7 @@ use crate::components::{
 
 pub const FILTER_FIELDS: [&str; 3] = ["Name", "Tier", "Pack"];
 pub const FILTER_FIELD_DEFAULTS: [&str; 3] = ["", "1", "Turtle"];
-type SlotImgs = VecDeque<(String, Option<Pet>)>;
+type SlotImgs = VecDeque<(String, Option<String>)>;
 
 #[derive(Props)]
 pub struct BattleUIState<'a> {
@@ -31,7 +31,7 @@ pub struct BattleUIState<'a> {
 
 pub fn Battle(cx: Scope) -> Element {
     // Selected team.
-    let selected_team = use_state(cx, || TeamType::default().to_string());
+    let selected_team = use_state(cx, || String::from("Friend"));
     // Selected item.
     let selected_item = use_state(cx, || None);
     // Selected pet.
@@ -45,38 +45,43 @@ pub fn Battle(cx: Scope) -> Element {
     });
     // Stored state for pets.
     let team_pets = use_ref(cx, || {
-        let mut teams = IndexMap::<String, VecDeque<(String, Option<Pet>)>>::new();
+        let mut teams = IndexMap::<String, VecDeque<(String, Option<String>)>>::new();
         teams.insert(
-            TeamType::Friend.to_string(),
+            String::from("Friend"),
             VecDeque::with_capacity(ALLOWED_TEAM_SIZE),
         );
         teams.insert(
-            TeamType::Enemy.to_string(),
+            String::from("Enemy"),
             VecDeque::with_capacity(ALLOWED_TEAM_SIZE),
         );
         teams
     });
 
-    let team_container_component = cx.render(rsx! {
-        TeamContainer {
-            selected_team: selected_team,
-            selected_item: selected_item,
-            selected_pet_idx: selected_pet_idx,
-            selected_pet_attr: selected_pet_property,
-            filters: selected_filters,
-            teams: team_pets
-        }
-    });
-    let pet_attr_component = cx.render(rsx! {
-        PetAttrContainer {
-            selected_team: selected_team,
-            selected_item: selected_item,
-            selected_pet_idx: selected_pet_idx,
-            selected_pet_attr: selected_pet_property,
-            filters: selected_filters,
-            teams: team_pets
-        }
-    });
+    let team_container_component = || {
+        cx.render(rsx! {
+            TeamContainer {
+                selected_team: selected_team,
+                selected_item: selected_item,
+                selected_pet_idx: selected_pet_idx,
+                selected_pet_attr: selected_pet_property,
+                filters: selected_filters,
+                teams: team_pets
+            }
+        })
+    };
+    let pet_attr_component = || {
+        cx.render(rsx! {
+            "Pet attrs"
+            // PetAttrContainer {
+            //     selected_team: selected_team,
+            //     selected_item: selected_item,
+            //     selected_pet_idx: selected_pet_idx,
+            //     selected_pet_attr: selected_pet_property,
+            //     filters: selected_filters,
+            //     teams: team_pets
+            // }
+        })
+    };
 
     cx.render(rsx! {
         div {
@@ -88,12 +93,12 @@ pub fn Battle(cx: Scope) -> Element {
                     selected_tab: selected_team,
                     tabs: IndexMap::from_iter([
                         (
-                            TeamType::Friend.to_string(),
-                            team_container_component.clone()
+                            String::from("Friend"),
+                            team_container_component()
                         ),
                         (
-                            TeamType::Enemy.to_string(),
-                            team_container_component
+                            String::from("Enemy"),
+                            team_container_component()
                         )
                     ]),
                 }
@@ -106,15 +111,15 @@ pub fn Battle(cx: Scope) -> Element {
                     tabs: IndexMap::from_iter([
                         (
                             String::from("Stats"),
-                            pet_attr_component.clone()
+                            pet_attr_component()
                         ),
                         (
                             String::from("Effect"),
-                            pet_attr_component.clone()
+                            pet_attr_component()
                         ),
                         (
                             String::from("Food"),
-                            pet_attr_component
+                            pet_attr_component()
                         ),
                     ])
                 }
@@ -151,14 +156,14 @@ pub fn Battle(cx: Scope) -> Element {
 
         br {}
 
-        FightSummary {
-            selected_team: selected_team,
-            selected_item: selected_item,
-            selected_pet_idx: selected_pet_idx,
-            selected_pet_attr: selected_pet_property,
-            filters: selected_filters,
-            teams: team_pets
-        }
+        // FightSummary {
+        //     selected_team: selected_team,
+        //     selected_item: selected_item,
+        //     selected_pet_idx: selected_pet_idx,
+        //     selected_pet_attr: selected_pet_property,
+        //     filters: selected_filters,
+        //     teams: team_pets
+        // }
 
         // To prevent footer overlap.
         br {}
