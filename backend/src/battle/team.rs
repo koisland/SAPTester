@@ -42,6 +42,7 @@ impl TryFrom<SimplePet> for Pet {
         let pet_lvl = simple_pet
             .level
             .map_or(1, |lvl| lvl.clamp(MIN_PET_LEVEL, MAX_PET_LEVEL));
+
         PetName::from_str(&simple_pet.name)
             .and_then(|pet_name| Pet::new(pet_name, None, pet_lvl))
             .map(|mut pet| {

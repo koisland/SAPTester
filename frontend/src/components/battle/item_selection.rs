@@ -1,12 +1,13 @@
 use dioxus::prelude::*;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use sir::css;
+use log::info;
 
 use crate::{
     components::{
         battle::{
             ui::{BattleUIState, FILTER_FIELDS},
+            utils::{add_pet_to_team, assign_pet_property, PetProperty},
             MAX_PET_TIER,
         },
         tabs::TabContainer,
@@ -15,11 +16,19 @@ use crate::{
 };
 
 pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
-    let img_hover_css = css!("img:hover { opacity: 0.7 }");
-    let Some(Some(pets)) = RECORDS.get().map(|records| records.get("Pets")) else {
+    let Some(records) = RECORDS.get() else {
         return cx.render(rsx! {
             div {
-                class: "w3-container",
+                class: "w3-container w3-responsive",
+                "Click an item type to display its contents."
+            }
+        })
+    };
+
+    let Some(pets) = records.get("Pets") else {
+        return cx.render(rsx! {
+            div {
+                class: "w3-container w3-responsive",
                 "Unable to retrieve pet information."
             }
         })
@@ -28,28 +37,32 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     // TODO: Filter query.
     cx.render(rsx! {
         div {
-            class: "w3-table w3-striped  w3-responsive w3-white {img_hover_css}",
-            pets.iter().map(|(pet, item_info)| {
+            class: "w3-table w3-striped w3-responsive w3-white",
+            pets.iter()
+            // Only show one level of pet.
+            .filter(|(_, item_info)| item_info.get("lvl").and_then(|lvl| lvl.as_u64()).eq(&Some(1)))
+            .map(|(pet, item_info)| {
                 let url = item_info.get("img_url").and_then(|url| url.as_str()).unwrap_or(EMPTY_SLOT_IMG);
+                let title = pet.trim_end_matches("_1");
                 rsx! {
                     img {
-                        class: "w3-image",
+                        class: "w3-image w3-hover-opacity",
                         src: "{url}",
-                        title: "{pet}",
+                        title: "{title}",
                         // Add pet on click.
                         onclick: move |_| {
-                            // if let Err(err) = add_pet_to_team(cx, item_info) {
-                            //     info!("{err}")
-                            // }
+                            if let Err(err) = add_pet_to_team(cx, item_info) {
+                                info!("{err}")
+                            }
                         },
                         // Add pet on drag.
                         ondragstart: move |_| {
-                            // if let Err(err) = add_pet_to_team(cx, item_info) {
-                            //     info!("{err}")
-                            // } else {
-                            //     // If successful, set as current pet.
-                            //     cx.props.selected_pet_idx.set(Some(0));
-                            // }
+                            if let Err(err) = add_pet_to_team(cx, item_info) {
+                                info!("{err}")
+                            } else {
+                                // If successful, set as current pet.
+                                cx.props.selected_pet_idx.set(Some(0));
+                            }
                         }
                     }
                 }
@@ -59,34 +72,48 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 }
 
 pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
-    let img_hover_css = css!("img:hover { opacity: 0.7 }");
+    let Some(records) = RECORDS.get() else {
+        return cx.render(rsx! {
+            div {
+                class: "w3-container w3-responsive",
+                "Click an item type to display its contents."
+            }
+        })
+    };
 
-    let Some(Some(foods)) = RECORDS.get().map(|records| records.get("Foods")) else {
-        return cx.render(rsx! { "Unable to retrieve pet information."})
+    let Some(foods) = records.get("Foods") else {
+        return cx.render(rsx! {
+            div {
+                class: "w3-container w3-responsive",
+                "Unable to retrieve food information."
+            }
+        })
     };
 
     cx.render(rsx! {
         div {
-            class: "w3-table w3-striped  w3-responsive w3-white {img_hover_css}",
+            class: "w3-table w3-striped w3-responsive w3-white",
+
             foods.iter().map(|(name, icon)| {
-                let name = name.to_string();
+                let title = name.to_string();
                 let url = icon.get("img_url").and_then(|url| url.as_str()).unwrap_or(EMPTY_SLOT_IMG);
                 rsx! {
                     img {
-                        class: "w3-image",
+                        class: "w3-image w3-hover-opacity",
                         src: "{url}",
-                        title: "{name}",
+                        title: "{title}",
                         draggable: "true",
                         // Dragging an item icon selects it; dropping it deselects it.
-                        ondragend: |_| cx.props.selected_item.set(None),
+                        ondragend: move |_| cx.props.selected_item.set(None),
+                        ondragstart: move |_| cx.props.selected_item.set(Some(name.to_string())),
                         // On item click, assign to current pet if any.
-                        onclick: |_| {
-                            // if let Some(idx) = cx.props.selected_pet_idx.get().map(|idx| {
-                            //     // Set selected item.
-                            //     // assign_food_to_pet(cx, idx, Some(name))
-                            // }) {
-                            //     info!("{err}")
-                            // }
+                        onclick: move |_| {
+                            if let Some(Err(err)) = cx.props.selected_pet_idx.get().map(|idx| {
+                                // Set selected item.
+                                assign_pet_property(cx, idx, PetProperty::Food(Some(name.to_string())))
+                            }) {
+                                info!("{err}")
+                            }
                         }
                     }
                 }
@@ -184,15 +211,14 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
                             });
                         });
                     },
-                    // [String::from(value), Pack::Puppy, Pack::Star, Pack::Weekly, Pack::Unknown].into_iter().map(|pack| {
-                    //     let pack = pack.to_string();
-                    //     cx.render(rsx! {
-                    //         option {
-                    //             value: "{pack}",
-                    //             "{pack}"
-                    //         }
-                    //     })
-                    // })
+                    [String::from("Turtle"), String::from("Puppy"), String::from("Star"), String::from("Weekly"),String::from("Other")].into_iter().map(|pack| {
+                        cx.render(rsx! {
+                            option {
+                                value: "{pack}",
+                                "{pack}"
+                            }
+                        })
+                    })
                 }
             }
         }

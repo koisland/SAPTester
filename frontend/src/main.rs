@@ -1,5 +1,3 @@
-// pub mod components;
-// pub mod utils;
 #![allow(non_snake_case)]
 
 mod components;
@@ -8,17 +6,13 @@ mod utils;
 use dioxus::prelude::*;
 use dioxus_router::{Route, Router};
 use indexmap::IndexMap;
-
 use once_cell::sync::OnceCell;
-use sir::global_css;
-use utils::extract_urls::ItemRecords;
 
 use crate::components::battle::ui::Battle;
 use crate::components::footer::Footer;
 use crate::components::home::Home;
 use crate::components::nav::Nav;
-// use crate::components::routes::AppRoutes;
-use crate::utils::extract_urls::get_all_sap_records;
+use crate::utils::get_records::{get_all_sap_records, ItemRecords};
 
 pub const EMPTY_SLOT_IMG: &str = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Empty_set_symbol.svg/200px-Empty_set_symbol.svg.png";
 
@@ -33,14 +27,6 @@ pub type SAPRecords = IndexMap<String, ItemRecords>;
 static RECORDS: OnceCell<SAPRecords> = OnceCell::new();
 
 pub fn App(cx: Scope) -> Element {
-    global_css!(
-        r#"
-        html,body,h1,h2,h3,h4,h5 {
-            font-family: "Raleway", sans-serif;
-        }
-    "#
-    );
-
     if let Some(Ok(item_img_urls)) =
         use_future(cx, (), |_| async move { get_all_sap_records().await }).value()
     {

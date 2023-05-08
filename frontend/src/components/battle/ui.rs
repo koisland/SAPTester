@@ -5,11 +5,9 @@ use std::collections::{HashMap, VecDeque};
 use crate::components::{
     battle::{
         item_selection::{GameItemsContainer, GameItemsFilterContainer},
-        // fight::FightSummary,
-        // item_selection::{GameItemsContainer, GameItemsFilterContainer},
-        // selected_pet::PetAttrContainer,
+        selected_pet::PetAttrContainer,
         team::TeamContainer,
-        // utils::TeamType,
+        utils::SimplePet,
         ALLOWED_TEAM_SIZE,
     },
     tabs::TabContainer,
@@ -17,7 +15,8 @@ use crate::components::{
 
 pub const FILTER_FIELDS: [&str; 3] = ["Name", "Tier", "Pack"];
 pub const FILTER_FIELD_DEFAULTS: [&str; 3] = ["", "1", "Turtle"];
-type SlotImgs = VecDeque<(String, Option<String>)>;
+
+type PetSlots = VecDeque<(String, Option<SimplePet>)>;
 
 #[derive(Props)]
 pub struct BattleUIState<'a> {
@@ -26,7 +25,7 @@ pub struct BattleUIState<'a> {
     pub selected_item: &'a UseState<Option<String>>,
     pub selected_pet_attr: &'a UseState<String>,
     pub filters: &'a UseRef<HashMap<&'static str, String>>,
-    pub teams: &'a UseRef<IndexMap<String, SlotImgs>>,
+    pub teams: &'a UseRef<IndexMap<String, PetSlots>>,
 }
 
 pub fn Battle(cx: Scope) -> Element {
@@ -45,7 +44,7 @@ pub fn Battle(cx: Scope) -> Element {
     });
     // Stored state for pets.
     let team_pets = use_ref(cx, || {
-        let mut teams = IndexMap::<String, VecDeque<(String, Option<String>)>>::new();
+        let mut teams = IndexMap::<String, PetSlots>::new();
         teams.insert(
             String::from("Friend"),
             VecDeque::with_capacity(ALLOWED_TEAM_SIZE),
@@ -71,15 +70,14 @@ pub fn Battle(cx: Scope) -> Element {
     };
     let pet_attr_component = || {
         cx.render(rsx! {
-            "Pet attrs"
-            // PetAttrContainer {
-            //     selected_team: selected_team,
-            //     selected_item: selected_item,
-            //     selected_pet_idx: selected_pet_idx,
-            //     selected_pet_attr: selected_pet_property,
-            //     filters: selected_filters,
-            //     teams: team_pets
-            // }
+            PetAttrContainer {
+                selected_team: selected_team,
+                selected_item: selected_item,
+                selected_pet_idx: selected_pet_idx,
+                selected_pet_attr: selected_pet_property,
+                filters: selected_filters,
+                teams: team_pets
+            }
         })
     };
 

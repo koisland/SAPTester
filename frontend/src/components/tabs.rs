@@ -8,7 +8,6 @@ pub struct TabState<'a> {
     pub tabs: IndexMap<String, Element<'a>>,
 }
 
-#[allow(dead_code)]
 pub fn TabContainer<'a>(cx: Scope<'a, TabState<'a>>) -> Element {
     cx.render(rsx! {
         div {

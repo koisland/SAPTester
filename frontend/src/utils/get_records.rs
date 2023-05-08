@@ -6,10 +6,10 @@ pub type ItemRecords = IndexMap<String, Value>;
 
 pub const BACKEND_API_URL: &str = "http://127.0.0.1:3030/db";
 
-// pub const ATTACK_ICON: &str =
-//     "https://static.wikia.nocookie.net/superautopets/images/a/aa/Attack_Icon.png";
-// pub const HEALTH_ICON: &str =
-//     "https://static.wikia.nocookie.net/superautopets/images/4/44/Health_Icon.png";
+pub const ATTACK_ICON: &str =
+    "https://static.wikia.nocookie.net/superautopets/images/a/aa/Attack_Icon.png";
+pub const HEALTH_ICON: &str =
+    "https://static.wikia.nocookie.net/superautopets/images/4/44/Health_Icon.png";
 
 pub async fn get_all_sap_records() -> Result<IndexMap<String, ItemRecords>, Box<dyn Error>> {
     let mut item_img_urls: IndexMap<String, ItemRecords> = IndexMap::new();
@@ -31,9 +31,15 @@ pub async fn get_sap_records(categ: &str) -> Result<ItemRecords, Box<dyn Error>>
         Ok(records
             .iter()
             .filter_map(|rec| {
-                rec.get("name")
-                    .and_then(|name| name.as_str())
-                    .map(|name| (name.to_owned(), rec.to_owned()))
+                // Suffix name with level to avoid overriding hashed records.
+                let Some(name) = rec.get("name").and_then(|name| name.as_str()) else {
+                    return None
+                };
+                if let Some(lvl) = rec.get("lvl").and_then(|lvl| lvl.as_u64()) {
+                    Some((format!("{name}_{lvl}"), rec.to_owned()))
+                } else {
+                    Some((name.to_owned(), rec.to_owned()))
+                }
             })
             .collect())
     } else {
