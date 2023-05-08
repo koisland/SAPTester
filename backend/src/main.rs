@@ -32,7 +32,7 @@ async fn main() {
         args.port,
     ));
 
-    let app = Router::new().merge(db_routes()).merge(battle_routes());
+    let app = app();
 
     log::info!("Listening on http://{addr}");
 
@@ -40,4 +40,8 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+pub fn app() -> Router {
+    Router::new().merge(db_routes()).merge(battle_routes())
 }

@@ -217,6 +217,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "clap",
+ "hyper",
  "indexmap",
  "itertools",
  "log",
@@ -226,6 +227,7 @@ dependencies = [
  "serde_json",
  "simple-logging",
  "tokio",
+ "tower",
 ]
 
 [[package]]

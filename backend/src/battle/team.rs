@@ -21,7 +21,7 @@ pub struct SimpleTeam {
     pets: Vec<Option<SimplePet>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default, Clone)]
 pub struct SimplePet {
     pub name: String,
     pub attack: Option<usize>,
@@ -75,5 +75,75 @@ impl TryFrom<SimpleTeam> for Team {
             let _ = team.set_name(&simple_team.name);
             team
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use saptest::TeamViewer;
+
+    use super::*;
+
+    #[test]
+    fn test_build_def_pet() {
+        let def_ant = SimplePet {
+            name: "Ant".to_owned(),
+            ..Default::default()
+        };
+
+        let ant: Pet = def_ant.try_into().unwrap();
+
+        assert!(
+            ant.name == PetName::Ant
+                && ant.get_level() == 1
+                && ant.stats.attack == 2
+                && ant.stats.health == 1
+                && ant.item == None
+        )
+    }
+
+    #[test]
+    fn test_deserialize_pet() {
+        let pet_only_name = r#"{"name": "Ant"}"#;
+        let pet_w_stats = r#"{"name": "Ant", "attack": 1, "health": 2}"#;
+        let pet_leveled = r#"{"name": "Ant", "level": 2}"#;
+        let pet_w_food = r#"{"name": "Ant", "item": "Grapes"}"#;
+
+        let pet_only_name: SimplePet = serde_json::from_str(pet_only_name).unwrap();
+        let pet_w_stats: SimplePet = serde_json::from_str(pet_w_stats).unwrap();
+        let pet_leveled: SimplePet = serde_json::from_str(pet_leveled).unwrap();
+        let pet_w_food: SimplePet = serde_json::from_str(pet_w_food).unwrap();
+
+        assert_eq!(pet_only_name.name, "Ant".to_owned());
+        assert!(pet_w_stats.attack == Some(1) && pet_w_stats.health == Some(2));
+        assert_eq!(pet_leveled.level, Some(2));
+        assert_eq!(pet_w_food.item, Some("Grapes".to_owned()));
+    }
+
+    #[test]
+    fn test_build_team() {
+        let simple_pet = SimplePet {
+            name: "Ant".to_owned(),
+            ..Default::default()
+        };
+        let simple_pets = vec![
+            Some(simple_pet.clone()),
+            None,
+            Some(simple_pet.clone()),
+            Some(simple_pet),
+        ];
+        let simple_team = SimpleTeam {
+            name: "The Super Auto Pets".to_owned(),
+            pets: simple_pets,
+        };
+        let team: Team = simple_team.try_into().unwrap();
+
+        assert!(
+            // Name set.
+            team.get_name() == "The Super Auto Pets" &&
+            team.all().len() == 3 &&
+            // Order preserved.
+            team.nth(1).is_none()
+        )
     }
 }
