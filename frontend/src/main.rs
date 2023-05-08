@@ -4,16 +4,17 @@ mod components;
 mod utils;
 
 use dioxus::prelude::*;
-use dioxus_router::{Route, Router};
+use dioxus_router::{Redirect, Route, Router};
 use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
 
-use crate::components::battle::ui::Battle;
-use crate::components::footer::Footer;
-use crate::components::home::Home;
-use crate::components::nav::Nav;
-use crate::utils::get_records::{get_all_sap_records, ItemRecords};
+use crate::{
+    components::{about::About, battle::ui::Battle, footer::Footer, home::Home, nav::Nav},
+    utils::get_records::{get_all_sap_records, ItemRecords},
+};
 
+pub const SAPTEST_URL: &str = "https://github.com/koisland/SuperAutoTest";
+pub const SAPAI_URL: &str = "https://github.com/manny405/sapai";
 pub const EMPTY_SLOT_IMG: &str = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Empty_set_symbol.svg/200px-Empty_set_symbol.svg.png";
 
 fn main() {
@@ -27,6 +28,7 @@ pub type SAPRecords = IndexMap<String, ItemRecords>;
 static RECORDS: OnceCell<SAPRecords> = OnceCell::new();
 
 pub fn App(cx: Scope) -> Element {
+    // Get all SAP records from backend on app init.
     if let Some(Ok(item_img_urls)) =
         use_future(cx, (), |_| async move { get_all_sap_records().await }).value()
     {
@@ -51,13 +53,15 @@ pub fn App(cx: Scope) -> Element {
             class: "w3-white",
             Router {
                 Nav {},
-                br {}
-                br {}
-                br {}
+
+                for _ in 0..3 {
+                    br {}
+                }
 
                 Route { to: "/home" , Home {} },
-                Route { to: "/battle"  Battle {} },
-                Route { to: "/about" }
+                Route { to: "/battle",  Battle {} },
+                Route { to: "/about", About {} },
+                Redirect { from: "", to: "/home" }
                 Footer {}
             }
         }

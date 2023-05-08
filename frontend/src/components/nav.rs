@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_router::Link;
 
-const SAPTEST_URL: &str = "https://github.com/koisland/SuperAutoTest";
+use crate::SAPTEST_URL;
 
 pub fn Nav(cx: Scope) -> Element {
     cx.render(rsx! {
