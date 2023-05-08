@@ -5,7 +5,7 @@ pub fn Footer(cx: Scope) -> Element {
         footer {
             class: "w3-container w3-black",
             p {
-                "Generated with Dioxus and Axum."
+                "Built with Dioxus."
             }
             p {
                 "© 2023 Keisuke K. Oshima"

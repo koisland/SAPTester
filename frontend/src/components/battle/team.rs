@@ -3,8 +3,9 @@ use log::info;
 
 use crate::{
     components::battle::{
+        state::{assign_pet_property, remove_pet_from_team, swap_pet_on_team},
         ui::BattleUIState,
-        utils::{assign_pet_property, remove_pet_from_team, swap_pet_on_team, PetProperty},
+        utils::PetProperty,
     },
     RECORDS,
 };

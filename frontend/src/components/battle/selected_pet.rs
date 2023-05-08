@@ -3,10 +3,9 @@ use log::info;
 
 use crate::{
     components::battle::{
+        state::{assign_pet_property, get_selected_pet_property},
         ui::BattleUIState,
-        utils::{
-            assign_pet_property, get_selected_pet_property, PetProperty, SimpleEffect, SimpleFood,
-        },
+        utils::{PetProperty, SimpleEffect, SimpleFood},
     },
     utils::get_records::{ATTACK_ICON, HEALTH_ICON},
     RECORDS,
@@ -173,7 +172,7 @@ fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
         return cx.render(rsx! {
             div {
                 class: "w3-container",
-                h2 { "No Selected Pet" }
+                h2 { "No Food for Selected Pet" }
             }
         })
     };

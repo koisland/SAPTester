@@ -6,8 +6,9 @@ use log::info;
 use crate::{
     components::{
         battle::{
+            state::{add_pet_to_team, assign_pet_property},
             ui::{BattleUIState, FILTER_FIELDS},
-            utils::{add_pet_to_team, assign_pet_property, PetProperty},
+            utils::PetProperty,
             MAX_PET_TIER,
         },
         tabs::TabContainer,
@@ -18,6 +19,7 @@ use crate::{
 pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let Some(records) = RECORDS.get() else {
         return cx.render(rsx! {
+            br {}
             div {
                 class: "w3-container w3-responsive",
                 "Click an item type to display its contents."
@@ -27,6 +29,7 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 
     let Some(pets) = records.get("Pets") else {
         return cx.render(rsx! {
+            br {}
             div {
                 class: "w3-container w3-responsive",
                 "Unable to retrieve pet information."
@@ -74,6 +77,7 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let Some(records) = RECORDS.get() else {
         return cx.render(rsx! {
+            br {}
             div {
                 class: "w3-container w3-responsive",
                 "Click an item type to display its contents."
@@ -83,6 +87,7 @@ pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 
     let Some(foods) = records.get("Foods") else {
         return cx.render(rsx! {
+            br {}
             div {
                 class: "w3-container w3-responsive",
                 "Unable to retrieve food information."
