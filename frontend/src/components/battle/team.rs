@@ -5,8 +5,8 @@ use crate::{
     components::battle::{
         state::{assign_pet_property, remove_pet_from_team, swap_pet_on_team},
         ui::BattleUIState,
-        utils::PetProperty,
     },
+    records::pet::PetProperty,
     RECORDS,
 };
 
@@ -94,8 +94,7 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
     let Some(img_url) = RECORDS.get()
         .and_then(|records| records.get("Foods"))
         .and_then(|foods|
-            foods.get(&pet_item).and_then(|food| food.get("img_url")).and_then(|url| url.as_str())
-        ) else
+            foods.get(&pet_item).map(|food| food.img_url())) else
     {
         return None
     };

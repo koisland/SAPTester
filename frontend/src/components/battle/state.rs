@@ -1,13 +1,11 @@
 use dioxus::prelude::*;
-use serde_json::Value;
 use std::error::Error;
 
 use crate::{
     components::battle::{ui::BattleUIState, ALLOWED_TEAM_SIZE},
+    records::{pet::PetProperty, record::SAPSimpleRecord},
     RECORDS,
 };
-
-use super::utils::{PetProperty, SimplePet};
 
 pub fn get_selected_pet_property(
     cx: Scope<BattleUIState>,
@@ -32,7 +30,7 @@ pub fn get_selected_pet_property(
                     "Effect" => RECORDS.get()
                         .and_then(|rec| rec.get("Pets"))
                         .and_then(|pets| pets.get(&pet_name_lvl))
-                        .map(|rec| PetProperty::Effect(rec.try_into().ok())),
+                        .map(|rec| PetProperty::Effect(rec.effect())),
                     "Food" => Some(PetProperty::Food(pet.item.clone())),
                     "Level" => Some(PetProperty::Level(pet.level.unwrap_or(1))),
                     _ => None
@@ -62,16 +60,9 @@ pub fn swap_pet_on_team(
 
 pub fn add_pet_to_team(
     cx: &Scoped<BattleUIState>,
-    item_info: &Value,
+    item_info: &SAPSimpleRecord,
 ) -> Result<(), Box<dyn Error>> {
-    let (Some(name), Some(img_url), Some(atk), Some(health), Some(lvl)) = (
-        item_info.get("name").and_then(|name| name.as_str()),
-        item_info.get("img_url").and_then(|img_url| img_url.as_str()),
-        item_info.get("attack").and_then(|img_url| img_url.as_u64()),
-        item_info.get("health").and_then(|img_url| img_url.as_u64()),
-        item_info.get("lvl").and_then(|img_url| img_url.as_u64()),
-
-    ) else {
+    let SAPSimpleRecord::Pet(pet) = item_info else {
         return Err("Got a food record. Cannot add item to team.".into());
     };
     // Create pet only if selected team has less than 6 pets.
@@ -82,22 +73,17 @@ pub fn add_pet_to_team(
         .with(|teams| teams.get(selected_team).map(|teams| teams.len()));
 
     if team_size.filter(|size| *size < ALLOWED_TEAM_SIZE).is_some() {
-        let slot = if name == "Slot" {
+        // Add empty space if pet name is 'Slot'.
+        let slot = if pet.name == "Slot" {
             None
         } else {
-            Some(SimplePet {
-                name: name.to_owned(),
-                attack: atk.try_into().ok(),
-                health: health.try_into().ok(),
-                level: lvl.try_into().ok(),
-                item: None,
-            })
+            Some(pet.clone())
         };
 
         // Get a mut handle to the selected team pets.
         cx.props.teams.with_mut(|teams| {
             if let Some(selected_team) = teams.get_mut(selected_team) {
-                selected_team.push_front((img_url.to_string(), slot))
+                selected_team.push_front((pet.img_url.clone(), slot))
             }
         })
     }

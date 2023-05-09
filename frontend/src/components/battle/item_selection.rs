@@ -8,12 +8,12 @@ use crate::{
         battle::{
             state::{add_pet_to_team, assign_pet_property},
             ui::{BattleUIState, FILTER_FIELDS},
-            utils::PetProperty,
             MAX_PET_TIER,
         },
         tabs::TabContainer,
     },
-    EMPTY_SLOT_IMG, RECORDS,
+    records::pet::PetProperty,
+    RECORDS,
 };
 
 pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
@@ -43,24 +43,22 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
             class: "w3-table w3-striped w3-responsive w3-white",
             pets.iter()
             // Only show one level of pet.
-            .filter(|(_, item_info)| item_info.get("lvl").and_then(|lvl| lvl.as_u64()).eq(&Some(1)))
-            .map(|(pet, item_info)| {
-                let url = item_info.get("img_url").and_then(|url| url.as_str()).unwrap_or(EMPTY_SLOT_IMG);
-                let title = pet.trim_end_matches("_1");
+            .filter(|(_, pet_info)| pet_info.level() == Some(1) && pet_info.is_valid_item(cx) )
+            .map(|(_leveled_pet_id, pet_info)| {
                 rsx! {
                     img {
                         class: "w3-image w3-hover-opacity",
-                        src: "{url}",
-                        title: "{title}",
+                        src: "{pet_info.img_url()}",
+                        title: "{pet_info.name()}",
                         // Add pet on click.
                         onclick: move |_| {
-                            if let Err(err) = add_pet_to_team(cx, item_info) {
+                            if let Err(err) = add_pet_to_team(cx, pet_info) {
                                 info!("{err}")
                             }
                         },
                         // Add pet on drag.
                         ondragstart: move |_| {
-                            if let Err(err) = add_pet_to_team(cx, item_info) {
+                            if let Err(err) = add_pet_to_team(cx, pet_info) {
                                 info!("{err}")
                             } else {
                                 // If successful, set as current pet.
@@ -99,14 +97,14 @@ pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
         div {
             class: "w3-table w3-striped w3-responsive w3-white",
 
-            foods.iter().map(|(name, icon)| {
-                let title = name.to_string();
-                let url = icon.get("img_url").and_then(|url| url.as_str()).unwrap_or(EMPTY_SLOT_IMG);
+            foods.iter()
+            .filter(|(_, food_info)| food_info.holdable() && food_info.is_valid_item(cx))
+            .map(|(name, food_info)|
                 rsx! {
                     img {
                         class: "w3-image w3-hover-opacity",
-                        src: "{url}",
-                        title: "{title}",
+                        src: "{food_info.img_url()}",
+                        title: "{food_info.name()}",
                         draggable: "true",
                         // Dragging an item icon selects it; dropping it deselects it.
                         ondragend: move |_| cx.props.selected_item.set(None),
@@ -122,7 +120,7 @@ pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
                         }
                     }
                 }
-            })
+            )
         }
     })
 }
@@ -216,7 +214,7 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
                             });
                         });
                     },
-                    [String::from("Turtle"), String::from("Puppy"), String::from("Star"), String::from("Weekly"),String::from("Other")].into_iter().map(|pack| {
+                    [String::from("Turtle"), String::from("Puppy"), String::from("Star"), String::from("Weekly"),String::from("Unknown")].into_iter().map(|pack| {
                         cx.render(rsx! {
                             option {
                                 value: "{pack}",

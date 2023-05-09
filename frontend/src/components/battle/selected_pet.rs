@@ -5,16 +5,16 @@ use crate::{
     components::battle::{
         state::{assign_pet_property, get_selected_pet_property},
         ui::BattleUIState,
-        utils::{PetProperty, SimpleEffect, SimpleFood},
+        ATTACK_ICON, HEALTH_ICON,
     },
-    utils::get_records::{ATTACK_ICON, HEALTH_ICON},
+    records::{effect::SimpleEffect, pet::PetProperty},
     RECORDS,
 };
 
 fn LabeledStatInput<'a>(
     cx: Scope<'a, BattleUIState<'a>>,
     stat_label: &'a str,
-    starting_value: usize,
+    starting_value: u64,
 ) -> Element<'a> {
     let is_valid_state = use_state(cx, || true);
     let Some(pet_idx) = cx.props.selected_pet_idx.get() else {
@@ -40,7 +40,7 @@ fn LabeledStatInput<'a>(
                 max: "{50}",
                 required: true,
                 onchange: move |evt| {
-                    if let Ok(input_stat_value) = &evt.data.value.parse::<usize>().map(|value| value.clamp(1, 50)) {
+                    if let Ok(input_stat_value) = &evt.data.value.parse::<u64>().map(|value| value.clamp(1, 50)) {
                         is_valid_state.set(true);
                         let stat_value: Option<PetProperty> = match stat_label {
                             "Attack" => Some(PetProperty::Attack(Some(*input_stat_value))),
@@ -176,15 +176,15 @@ fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
             }
         })
     };
-    if let Some(food) = RECORDS
+    if let Some((Some(food_effect), food_name)) = RECORDS
         .get()
         .and_then(|records| records.get("Foods").and_then(|foods| foods.get(&pet_food)))
-        .and_then(|food_val| TryInto::<SimpleFood>::try_into(food_val).ok())
+        .map(|food| (food.effect(), food.name()))
     {
         cx.render(rsx! {
             div {
                 class: "w3-container",
-                EffectPanel(cx, &food.effect, Some(food.name.to_string()))
+                EffectPanel(cx, &food_effect, Some(food_name))
             }
         })
     } else {

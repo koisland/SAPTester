@@ -2,15 +2,17 @@ use dioxus::prelude::*;
 use indexmap::IndexMap;
 use std::collections::{HashMap, VecDeque};
 
-use crate::components::{
-    battle::{
-        item_selection::{GameItemsContainer, GameItemsFilterContainer},
-        selected_pet::PetAttrContainer,
-        team::TeamContainer,
-        utils::SimplePet,
-        ALLOWED_TEAM_SIZE,
+use crate::{
+    components::{
+        battle::{
+            item_selection::{GameItemsContainer, GameItemsFilterContainer},
+            selected_pet::PetAttrContainer,
+            team::TeamContainer,
+            ALLOWED_TEAM_SIZE,
+        },
+        tabs::TabContainer,
     },
-    tabs::TabContainer,
+    records::pet::SimplePet,
 };
 
 pub const FILTER_FIELDS: [&str; 3] = ["Name", "Tier", "Pack"];
@@ -29,13 +31,9 @@ pub struct BattleUIState<'a> {
 }
 
 pub fn Battle(cx: Scope) -> Element {
-    // Selected team.
     let selected_team = use_state(cx, || String::from("Friend"));
-    // Selected item.
     let selected_item = use_state(cx, || None);
-    // Selected pet.
     let selected_pet_idx = use_state(cx, || None);
-    // Selected pet property.
     let selected_pet_property = use_state(cx, || String::from("Stats"));
     // Item filters.
     let selected_filters = use_ref(cx, || {

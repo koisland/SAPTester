@@ -16,7 +16,7 @@ pub fn Home(cx: Scope) -> Element {
                     "Welcome to SAPTester!"
                 }
                 h3 {
-                    "A site to test teams from the game:\t"
+                    "A site to simulate battles in\t"
                     img {
                         class: "w3-image w3-round",
                         src: "{SAP_LOGO}",
@@ -26,7 +26,12 @@ pub fn Home(cx: Scope) -> Element {
 
                 div {
                     class: "w3-panel w3-large w3-text-red",
-                    "This is an unofficial project not affliated with Team Wood Games."
+                    "This is an unofficial project not affiliated with "
+                    a {
+                        href: "https://teamwoodgames.com/",
+                        "Team Wood Games"
+                    }
+                    "."
                 }
             }
 

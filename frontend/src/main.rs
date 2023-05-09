@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 mod components;
-mod utils;
+mod records;
 
 use dioxus::prelude::*;
 use dioxus_router::{Redirect, Route, Router};
@@ -10,12 +10,11 @@ use once_cell::sync::OnceCell;
 
 use crate::{
     components::{about::About, battle::ui::Battle, footer::Footer, home::Home, nav::Nav},
-    utils::get_records::{get_all_sap_records, ItemRecords},
+    records::query::{get_all_sap_records, ItemRecords},
 };
 
 pub const SAPTEST_URL: &str = "https://github.com/koisland/SuperAutoTest";
 pub const SAPAI_URL: &str = "https://github.com/manny405/sapai";
-pub const EMPTY_SLOT_IMG: &str = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Empty_set_symbol.svg/200px-Empty_set_symbol.svg.png";
 
 fn main() {
     // Init debug tool for WebAssembly.
@@ -35,8 +34,7 @@ pub fn App(cx: Scope) -> Element {
         let _ = RECORDS.set(item_img_urls.to_owned());
     };
 
-    // https://www.w3schools.com/w3css/tryit.asp?filename=tryw3css_templates_analytics&stacked=h
-    cx.render(rsx!{
+    cx.render(rsx! {
         link {
             rel: "stylesheet",
             href: "https://www.w3schools.com/w3css/4/w3.css"
@@ -44,10 +42,6 @@ pub fn App(cx: Scope) -> Element {
         link {
             rel:"stylesheet",
             href:"https://fonts.googleapis.com/css?family=Raleway"
-        }
-        link {
-            rel:"stylesheet",
-            href:"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
         }
         body {
             class: "w3-white",
