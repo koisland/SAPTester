@@ -8,7 +8,7 @@ use clap::Parser;
 )]
 pub struct Args {
     /// The HTTP listening address.
-    #[clap(short = 'a', long = "addr", default_value = "127.0.0.1")]
+    #[clap(short = 'a', long = "addr", default_value = "0.0.0.0")]
     pub addr: String,
 
     /// The HTTP listening port.

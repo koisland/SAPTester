@@ -31,7 +31,7 @@ async fn main() {
     .unwrap();
 
     let addr: SocketAddr = SocketAddr::from((
-        IpAddr::from_str(args.addr.as_str()).unwrap_or(IpAddr::V6(Ipv6Addr::LOCALHOST)),
+        IpAddr::from_str(args.addr.as_str()).unwrap_or(IpAddr::V6(Ipv6Addr::UNSPECIFIED)),
         args.port,
     ));
 

@@ -13,6 +13,8 @@ use crate::{
     records::query::{get_all_sap_records, ItemRecords},
 };
 
+pub const DEV_BACKEND_API_URL: &str = "http://127.0.0.1:3030";
+pub const BACKEND_API_URL: &str = "https://saptest.fly.dev";
 pub const SAPTEST_URL: &str = "https://github.com/koisland/SuperAutoTest";
 pub const SAPAI_URL: &str = "https://github.com/manny405/sapai";
 

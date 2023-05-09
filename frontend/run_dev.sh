@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-dioxus serve --port $1
+SAPTEST_DEV=1 dioxus serve --port $1

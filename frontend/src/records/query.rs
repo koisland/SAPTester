@@ -5,13 +5,23 @@ use std::error::Error;
 
 use crate::{
     components::battle::{fight::BattleResponse, ui::PetSlots, EMPTY_SLOT_ICON},
-    records::team::{SimpleTeam, Teams},
+    records::{
+        food::SimpleFood,
+        pet::SimplePet,
+        record::SAPSimpleRecord,
+        team::{SimpleTeam, Teams},
+    },
+    BACKEND_API_URL, DEV_BACKEND_API_URL,
 };
 
-use super::{food::SimpleFood, pet::SimplePet, record::SAPSimpleRecord};
-
 pub type ItemRecords = IndexMap<String, SAPSimpleRecord>;
-pub const BACKEND_API_URL: &str = "http://127.0.0.1:3030";
+
+pub fn in_saptest_dev() -> bool {
+    match std::env::var("SAPTEST_DEV") {
+        Ok(val) => val == 1.to_string(),
+        Err(_e) => false,
+    }
+}
 
 pub async fn get_all_sap_records() -> Result<IndexMap<String, ItemRecords>, Box<dyn Error>> {
     let mut item_img_urls: IndexMap<String, ItemRecords> = IndexMap::new();
@@ -37,6 +47,11 @@ pub async fn get_all_sap_records() -> Result<IndexMap<String, ItemRecords>, Box<
 pub async fn post_battle(
     mut teams: IndexMap<String, PetSlots>,
 ) -> Result<BattleResponse, Box<dyn Error>> {
+    let api_url = if in_saptest_dev() {
+        DEV_BACKEND_API_URL
+    } else {
+        BACKEND_API_URL
+    };
     let (Some(friends), Some(enemies)) = (
         teams.remove("Friend").map(|slots| slots.into_iter().map(|slot| slot.1).collect_vec()),
         teams.remove("Enemy").map(|slots| slots.into_iter().map(|slot| slot.1).collect_vec())
@@ -57,7 +72,7 @@ pub async fn post_battle(
 
     let client = reqwest::Client::new();
     let res = client
-        .post(format!("{BACKEND_API_URL}/battle"))
+        .post(format!("{api_url}/battle"))
         .json(&teams)
         .send()
         .await?
@@ -68,7 +83,12 @@ pub async fn post_battle(
 }
 
 pub async fn get_sap_records(categ: &str) -> Result<ItemRecords, Box<dyn Error>> {
-    let url = format!("{BACKEND_API_URL}/db/{categ}");
+    let api_url = if in_saptest_dev() {
+        DEV_BACKEND_API_URL
+    } else {
+        BACKEND_API_URL
+    };
+    let url = format!("{api_url}/db/{categ}");
 
     let resp_text = reqwest::get(url).await?.text().await?;
     let pet_records: Value = serde_json::from_str(&resp_text)?;

@@ -1,0 +1,13 @@
+# fly.toml app configuration file generated for saptest on 2023-05-09T14:09:31-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "saptest"
+primary_region = "sjc"
+
+[http_service]
+  internal_port = 3030
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
