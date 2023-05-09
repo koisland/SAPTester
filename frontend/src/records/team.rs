@@ -9,6 +9,6 @@ pub struct Teams {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimpleTeam {
-    name: String,
-    pets: Vec<Option<SimplePet>>,
+    pub name: String,
+    pub pets: Vec<Option<SimplePet>>,
 }

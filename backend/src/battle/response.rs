@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, Json};
+use axum::{http::StatusCode, response::IntoResponse, Json};
 use saptest::{
     create_battle_digraph, error::SAPTestError, teams::team::TeamFightOutcome, Team, TeamCombat,
 };
@@ -29,7 +29,7 @@ impl Default for BattleResponse {
     }
 }
 
-pub async fn post_battle(Json(teams): Json<Teams>) -> Json<BattleResponse> {
+pub async fn post_battle(Json(teams): Json<Teams>) -> impl IntoResponse {
     let mut resp = BattleResponse::default();
     let friend_team: Result<Team, SAPTestError> = teams.friend_team.try_into();
     let enemy_team: Result<Team, SAPTestError> = teams.enemy_team.try_into();
@@ -37,12 +37,18 @@ pub async fn post_battle(Json(teams): Json<Teams>) -> Json<BattleResponse> {
     let Ok(mut team) = friend_team else {
         let err_msg = format!("Invalid Friend Team: {:?}", friend_team.unwrap_err());
         resp.status = Some(err_msg);
-        return Json(resp)
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(resp)
+        )
     };
     let Ok(mut enemy_team) = enemy_team else {
         let err_msg = format!("Invalid Enemy Team: {:?}", enemy_team.unwrap_err());
         resp.status = Some(err_msg);
-        return Json(resp)
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(resp)
+        )
     };
 
     let mut num_turns = 0;
@@ -72,5 +78,5 @@ pub async fn post_battle(Json(teams): Json<Teams>) -> Json<BattleResponse> {
         resp.status = Some(outcome.unwrap_err().to_string());
     }
 
-    Json(resp)
+    (StatusCode::ACCEPTED, Json(resp))
 }

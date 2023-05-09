@@ -39,8 +39,7 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 
     // TODO: Filter query.
     cx.render(rsx! {
-        div {
-            class: "w3-table w3-striped w3-responsive w3-white",
+        div { class: "w3-table w3-striped w3-responsive w3-white",
             pets.iter()
             // Only show one level of pet.
             .filter(|(_, pet_info)| pet_info.level() == Some(1) && pet_info.is_valid_item(cx) )
@@ -94,8 +93,7 @@ pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     };
 
     cx.render(rsx! {
-        div {
-            class: "w3-table w3-striped w3-responsive w3-white",
+        div { class: "w3-table w3-striped w3-responsive w3-white",
 
             foods.iter()
             .filter(|(_, food_info)| food_info.holdable() && food_info.is_valid_item(cx))
@@ -127,22 +125,17 @@ pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 
 pub fn GameItemsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let selected_item_tab = use_state(cx, || String::from("Pet"));
+    let game_item_containers = [
+        (String::from("Pet"), PetsContainer(cx)),
+        (String::from("Food"), FoodsContainer(cx)),
+    ];
 
     cx.render(rsx! {
         TabContainer {
             desc: "Item",
             selected_tab: selected_item_tab,
-            tabs: IndexMap::from_iter([
-                (
-                    String::from("Pet"),
-                    PetsContainer(cx)
-                ),
-                (
-                    String::from("Food"),
-                    FoodsContainer(cx)
-                ),
-            ])
-        },
+            tabs: IndexMap::from_iter(game_item_containers)
+        }
     })
 }
 
@@ -163,23 +156,23 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
     let is_valid_state = use_state(cx, || true);
 
     cx.render(rsx! {
-        div {
-            class: "w3-container w3-cell-middle",
-            div {
-                class: "w3-container",
+        div { class: "w3-container w3-cell-middle",
+            div { class: "w3-container",
                 h2 { "Filter" }
-                h3 { "Name"}
+                h3 { "Name" }
                 input {
                     class: "w3-input",
                     name: "Name",
                     "type": "search",
                     value: "{selected_name}",
                     oninput: move |evt| {
-                        cx.props.filters.with_mut(|filters| {
-                            filters.entry("Name").and_modify(|field| {
-                                *field = evt.data.value.clone()
+                        cx.props
+                            .filters
+                            .with_mut(|filters| {
+                                filters
+                                    .entry("Name")
+                                    .and_modify(|field| { *field = evt.data.value.clone() });
                             });
-                        });
                     }
                 }
                 h3 { "Tier" }
@@ -191,12 +184,14 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
                     min: "0",
                     max: "{MAX_PET_TIER}",
                     onchange: move |evt| {
-                        if let Ok(tier) = evt.data.value.parse::<usize>().map(|tier| tier.clamp(0, MAX_PET_TIER)) {
-                            cx.props.filters.with_mut(|filters| {
-                                filters.entry("Tier").and_modify(|field| {
-                                    *field = tier.to_string()
+                        if let Ok(tier)
+                            = evt.data.value.parse::<u64>().map(|tier| tier.clamp(0, MAX_PET_TIER))
+                        {
+                            cx.props
+                                .filters
+                                .with_mut(|filters| {
+                                    filters.entry("Tier").and_modify(|field| { *field = tier.to_string() });
                                 });
-                            });
                         } else {
                             is_valid_state.set(false)
                         }
@@ -208,11 +203,13 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
                     name: "Pack",
                     value: "{selected_pack}",
                     onchange: move |evt| {
-                        cx.props.filters.with_mut(|filters| {
-                            filters.entry("Pack").and_modify(|field| {
-                                *field = evt.data.value.clone()
+                        cx.props
+                            .filters
+                            .with_mut(|filters| {
+                                filters
+                                    .entry("Pack")
+                                    .and_modify(|field| { *field = evt.data.value.clone() });
                             });
-                        });
                     },
                     [String::from("Turtle"), String::from("Puppy"), String::from("Star"), String::from("Weekly"),String::from("Unknown")].into_iter().map(|pack| {
                         cx.render(rsx! {

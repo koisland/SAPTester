@@ -5,7 +5,10 @@ use std::{
 
 use axum::Router;
 use clap::Parser;
+use http::header::{ACCEPT, CONTENT_TYPE};
+use hyper::Method;
 use log::LevelFilter;
+use tower_http::cors::{Any, CorsLayer};
 
 mod args;
 mod battle;
@@ -43,5 +46,16 @@ async fn main() {
 }
 
 pub fn app() -> Router {
-    Router::new().merge(db_routes()).merge(battle_routes())
+    // https://docs.rs/tower-http/0.4.0/tower_http/cors/index.html
+    let cors = CorsLayer::new()
+        .allow_headers([CONTENT_TYPE, ACCEPT])
+        // Allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST])
+        // Allow requests from any origin
+        .allow_origin(Any);
+
+    Router::new()
+        .merge(db_routes())
+        .merge(battle_routes())
+        .layer(cors)
 }

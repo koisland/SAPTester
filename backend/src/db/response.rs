@@ -1,5 +1,4 @@
-use axum::headers::AccessControlAllowOrigin;
-use axum::{extract::Query, http::StatusCode, response::IntoResponse, Json, TypedHeader};
+use axum::{extract::Query, http::StatusCode, response::IntoResponse, Json};
 use itertools::Itertools;
 use saptest::{
     db::record::{FoodRecord, PetRecord},
@@ -38,7 +37,6 @@ pub async fn get_pet(Query(params): Query<HashMap<String, String>>) -> impl Into
         .map(|records| {
             (
                 StatusCode::FOUND,
-                TypedHeader(AccessControlAllowOrigin::ANY),
                 Json(
                     records
                         .into_iter()
@@ -62,7 +60,6 @@ pub async fn get_food(Query(params): Query<HashMap<String, String>>) -> impl Int
         .map(|records| {
             (
                 StatusCode::FOUND,
-                TypedHeader(AccessControlAllowOrigin::ANY),
                 Json(
                     records
                         .into_iter()

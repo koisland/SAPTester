@@ -16,6 +16,9 @@ use crate::{
 pub const SAPTEST_URL: &str = "https://github.com/koisland/SuperAutoTest";
 pub const SAPAI_URL: &str = "https://github.com/manny405/sapai";
 
+pub type SAPRecords = IndexMap<String, ItemRecords>;
+static RECORDS: OnceCell<SAPRecords> = OnceCell::new();
+
 fn main() {
     // Init debug tool for WebAssembly.
     wasm_logger::init(wasm_logger::Config::default());
@@ -23,8 +26,21 @@ fn main() {
     dioxus_web::launch(App);
 }
 
-pub type SAPRecords = IndexMap<String, ItemRecords>;
-static RECORDS: OnceCell<SAPRecords> = OnceCell::new();
+fn AppRoutes(cx: Scope) -> Element {
+    cx.render(rsx! {
+        Router {
+            Nav {}
+            for _ in 0..3 {
+                br {}
+            }
+            Route { to: "/home", Home {} }
+            Route { to: "/battle", Battle {} }
+            Route { to: "/about", About {} }
+            Redirect { from: "", to: "/home" }
+            Footer {}
+        }
+    })
+}
 
 pub fn App(cx: Scope) -> Element {
     // Get all SAP records from backend on app init.
@@ -35,29 +51,8 @@ pub fn App(cx: Scope) -> Element {
     };
 
     cx.render(rsx! {
-        link {
-            rel: "stylesheet",
-            href: "https://www.w3schools.com/w3css/4/w3.css"
-        }
-        link {
-            rel:"stylesheet",
-            href:"https://fonts.googleapis.com/css?family=Raleway"
-        }
-        body {
-            class: "w3-white",
-            Router {
-                Nav {},
-
-                for _ in 0..3 {
-                    br {}
-                }
-
-                Route { to: "/home" , Home {} },
-                Route { to: "/battle",  Battle {} },
-                Route { to: "/about", About {} },
-                Redirect { from: "", to: "/home" }
-                Footer {}
-            }
-        }
+        link { rel: "stylesheet", href: "https://www.w3schools.com/w3css/4/w3.css" }
+        link { rel: "stylesheet", href: "https://fonts.googleapis.com/css?family=Raleway" }
+        body { class: "w3-white", AppRoutes {} }
     })
 }

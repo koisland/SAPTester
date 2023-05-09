@@ -76,7 +76,7 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
                 }
             })
         } else {
-            cx.render(rsx! { "Failed to get team pets for {cx.props.selected_team}"})
+            cx.render(rsx! {"Failed to get team pets for {cx.props.selected_team}"})
         }
     })
 }

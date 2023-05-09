@@ -10,16 +10,10 @@ pub struct TabState<'a> {
 
 pub fn TabContainer<'a>(cx: Scope<'a, TabState<'a>>) -> Element {
     cx.render(rsx! {
-        div {
-            class: "w3-container",
-            div {
-                class: "w3-dropdown-hover",
-                button {
-                    class: "w3-button",
-                    "{cx.props.desc}"
-                }
-                div {
-                    class: "w3-dropdown-content",
+        div { class: "w3-container",
+            div { class: "w3-dropdown-hover",
+                button { class: "w3-button", "{cx.props.desc}" }
+                div { class: "w3-dropdown-content",
 
                     cx.props.tabs.keys().map(|tab| {
                         cx.render(rsx! {

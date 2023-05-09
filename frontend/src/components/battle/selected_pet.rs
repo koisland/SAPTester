@@ -5,7 +5,7 @@ use crate::{
     components::battle::{
         state::{assign_pet_property, get_selected_pet_property},
         ui::BattleUIState,
-        ATTACK_ICON, HEALTH_ICON,
+        ATTACK_ICON, HEALTH_ICON, MAX_PET_HEALTH, MIN_PET_HEALTH,
     },
     records::{effect::SimpleEffect, pet::PetProperty},
     RECORDS,
@@ -20,34 +20,43 @@ fn LabeledStatInput<'a>(
     let Some(pet_idx) = cx.props.selected_pet_idx.get() else {
         return None;
     };
+    let valid_input = if **is_valid_state {
+        "w3-input w3-center w3-half"
+    } else {
+        "w3-input w3-half w3-center w3-pale-red"
+    };
     cx.render(rsx! {
-        div {
-            class: "w3-container",
+        div { class: "w3-container",
             img {
                 class: "w3-image w3-center",
                 style: "float: left;",
                 width: "10%",
                 height: "10%",
                 title: "{stat_label}",
-                src: if stat_label == "Health" {HEALTH_ICON} else {ATTACK_ICON},
+                src: if stat_label == "Health" { HEALTH_ICON } else { ATTACK_ICON }
             }
             input {
-                class: if **is_valid_state { "w3-input w3-center w3-half"} else { "w3-input w3-half w3-center w3-pale-red"},
+                class: valid_input,
                 "type": "number",
                 placeholder: "{stat_label}",
                 value: "{starting_value}",
-                min: "{1}",
-                max: "{50}",
+                min: "{MIN_PET_HEALTH}",
+                max: "{MAX_PET_HEALTH}",
                 required: true,
                 onchange: move |evt| {
-                    if let Ok(input_stat_value) = &evt.data.value.parse::<u64>().map(|value| value.clamp(1, 50)) {
+                    if let Ok(input_stat_value)
+                        = &evt
+                            .data
+                            .value
+                            .parse::<u64>()
+                            .map(|value| value.clamp(MIN_PET_HEALTH, MAX_PET_HEALTH))
+                    {
                         is_valid_state.set(true);
                         let stat_value: Option<PetProperty> = match stat_label {
                             "Attack" => Some(PetProperty::Attack(Some(*input_stat_value))),
                             "Health" => Some(PetProperty::Health(Some(*input_stat_value))),
-                            _ => None
+                            _ => None,
                         };
-
                         if let Some(stat_value) = stat_value {
                             if let Err(err) = assign_pet_property(cx, *pet_idx, stat_value) {
                                 info!("{err}")
@@ -78,8 +87,7 @@ fn PetStatContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
         })
     };
     cx.render(rsx! {
-        form {
-            class: "w3-container",
+        form { class: "w3-container",
             h2 { "Stats" }
             LabeledStatInput(cx, "Attack", attack),
             LabeledStatInput(cx, "Health", health)
@@ -93,26 +101,26 @@ fn EffectPanel<'a>(
     header: Option<String>,
 ) -> Element<'a> {
     let header = if let Some(header_name) = header {
-        cx.render(rsx! { li { h2 { "{header_name}" } } })
+        cx.render(rsx! {
+            li { h2 { "{header_name}" } }
+        })
     } else {
         None
     };
     cx.render(rsx! {
-        div {
-            class: "w3-panel w3-leftbar",
-            ul {
-                class: "w3-ul",
-                header
+        div { class: "w3-panel w3-leftbar",
+            ul { class: "w3-ul",
+                header,
                 li {
-                    b { "Uses: "}
+                    b { "Uses: " }
                     "{effect.uses:?}"
                 }
                 li {
-                    b { "Action: "}
+                    b { "Action: " }
                     "{effect.text}"
                 }
                 li {
-                    b { "Trigger: "}
+                    b { "Trigger: " }
                     "{effect.trigger}"
                 }
             }
@@ -139,13 +147,10 @@ fn PetEffectContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     };
 
     cx.render(rsx! {
-        div {
-            class: "w3-container",
+        div { class: "w3-container",
             h2 { "Effect" }
             // Allow level selection.
-            select {
-                class: "w3-select w3-center",
-                value: "{pet_lvl}",
+            select { class: "w3-select w3-center", value: "{pet_lvl}",
                 (1..=3).map(|lvl| {
                     rsx! {
                         option {
@@ -182,17 +187,11 @@ fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
         .map(|food| (food.effect(), food.name()))
     {
         cx.render(rsx! {
-            div {
-                class: "w3-container",
-                EffectPanel(cx, &food_effect, Some(food_name))
-            }
+            div { class: "w3-container", EffectPanel(cx, &food_effect, Some(food_name)) }
         })
     } else {
         cx.render(rsx! {
-            div {
-                class: "w3-container",
-                h2 { "No Selected Food" }
-            }
+            div { class: "w3-container", h2 { "No Selected Food" } }
         })
     }
 }
@@ -201,8 +200,7 @@ pub fn PetAttrContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let selected_pet_attr = cx.props.selected_pet_attr.get();
 
     cx.render(rsx! {
-        div {
-            class: "w3-container ",
+        div { class: "w3-container ",
 
             if selected_pet_attr == "Stats" {
                 PetStatContainer(cx)

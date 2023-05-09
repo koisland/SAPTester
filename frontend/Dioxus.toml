@@ -1,0 +1,37 @@
+[application]
+
+# App (Project) Name
+name = "frontend"
+
+# Dioxus App Default Platform
+# desktop, web, mobile, ssr
+default_platform = "web"
+
+# `build` & `serve` dist path
+out_dir = "dist"
+
+# resource (public) file folder
+asset_dir = "public"
+
+[web.app]
+
+# HTML title tag content
+title = "🐢 SAPTester"
+
+[web.watcher]
+watch_path = ["src"]
+
+# include `assets` in web platform
+[web.resource]
+
+# CSS style file
+style = []
+
+# Javascript code file
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []

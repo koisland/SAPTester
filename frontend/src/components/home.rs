@@ -5,38 +5,23 @@ const SAP_LOGO: &str =
 
 pub fn Home(cx: Scope) -> Element {
     cx.render(rsx! {
-        div {
-            class: "w3-container w3-white",
+        div { class: "w3-container w3-white",
 
-            div {
-                class: "w3-container",
-                text_align: "center",
-                h1 {
-                    class: "w3-text-black",
-                    "Welcome to SAPTester!"
-                }
+            div { class: "w3-container", text_align: "center",
+                h1 { class: "w3-text-black", "Welcome to SAPTester!" }
                 h3 {
-                    "A site to simulate battles in\t"
-                    img {
-                        class: "w3-image w3-round",
-                        src: "{SAP_LOGO}",
-                        border: "2px solid"
-                    }
+                    "A site to simulate battles in	"
+                    img { class: "w3-image w3-round", src: "{SAP_LOGO}", border: "2px solid" }
                 }
 
-                div {
-                    class: "w3-panel w3-large w3-text-red",
+                div { class: "w3-panel w3-large w3-text-red",
                     "This is an unofficial project not affiliated with "
-                    a {
-                        href: "https://teamwoodgames.com/",
-                        "Team Wood Games"
-                    }
+                    a { href: "https://teamwoodgames.com/", "Team Wood Games" }
                     "."
                 }
             }
 
             br {}
-
         }
     })
 }
