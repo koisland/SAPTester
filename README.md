@@ -56,7 +56,8 @@ WIP.
 ```bash
 cd frontend/
 trunk build --release --public-url SAPTester
-mv dist/ ../docs
+mkdir ../docs
+mv dist/* ../docs
 ```
 
 ## Sources
