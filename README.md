@@ -49,6 +49,16 @@ curl -X GET "https://saptest.fly.dev/db/foods?tier=6&random=true"
 ### Battle
 WIP
 
+
+## Deployment
+WIP.
+
+```bash
+cd frontend/
+trunk build --release --public-url SAPTester
+mv dist/ ../docs
+```
+
 ## Sources
 * https://www.w3schools.com/w3css/w3css_references.asp
 * https://github.com/dxps/fullstack-rust-axum-dioxus-rwa/blob/main/backend/src/bin/server.rs
