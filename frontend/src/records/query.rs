@@ -44,14 +44,18 @@ pub async fn get_sap_records(categ: &str) -> Result<ItemRecords, Box<dyn Error>>
                 let Some(name) = rec.get("name").and_then(|name| name.as_str()) else {
                     return None
                 };
+                let Some(pack) = rec.get("pack").and_then(|pack| pack.as_str()) else {
+                    return None
+                };
+
                 // If has level is pet record, otherwise is food record.
                 let (item_name, converted_record) =
                     if let Some(lvl) = rec.get("lvl").and_then(|lvl| lvl.as_u64()) {
                         let pet_record = SimplePet::try_from(rec).map(SAPSimpleRecord::Pet).ok();
-                        (format!("{name}_{lvl}"), pet_record)
+                        (format!("{name}_{pack}_{lvl}"), pet_record)
                     } else {
                         let food_record = SimpleFood::try_from(rec).map(SAPSimpleRecord::Food).ok();
-                        (name.to_owned(), food_record)
+                        (format!("{name}_{pack}"), food_record)
                     };
 
                 converted_record.map(|valid_record| (item_name, valid_record))

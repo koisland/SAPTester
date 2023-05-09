@@ -22,7 +22,7 @@ pub fn get_selected_pet_property(
                 let Some(pet) = pet else {
                     return None
                 };
-                let pet_name_lvl = format!("{}_{}", pet.name, pet.level.unwrap_or(1));
+                let pet_name_lvl = format!("{}_{}_{}", pet.name, pet.pack, pet.level.unwrap_or(1));
 
                 match property_name {
                     "Attack" => Some(PetProperty::Attack(pet.attack)),
