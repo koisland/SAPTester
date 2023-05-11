@@ -53,8 +53,8 @@ pub async fn post_battle(
         BACKEND_API_URL
     };
     let (Some(friends), Some(enemies)) = (
-        teams.remove("Friend").map(|slots| slots.into_iter().map(|slot| slot.1).collect_vec()),
-        teams.remove("Enemy").map(|slots| slots.into_iter().map(|slot| slot.1).collect_vec())
+        teams.remove("Friend").map(|slots| slots.into_iter().rev().map(|slot| slot.1).collect_vec()),
+        teams.remove("Enemy").map(|slots| slots.into_iter().rev().map(|slot| slot.1).collect_vec())
     ) else {
         return Err("Missing a team.".into())
     };

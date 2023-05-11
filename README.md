@@ -64,3 +64,4 @@ mv dist/* ../docs
 * https://www.w3schools.com/w3css/w3css_references.asp
 * https://fasterthanli.me/articles/remote-development-with-rust-on-fly-io
 * https://github.com/dxps/fullstack-rust-axum-dioxus-rwa/blob/main/backend/src/bin/server.rs
+* https://quickchart.io/documentation/
