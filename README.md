@@ -1,11 +1,13 @@
 # SAPTester
+[![GitHub Pages](https://github.com/koisland/SAPTester/actions/workflows/pages.yaml/badge.svg)](https://github.com/koisland/SAPTester/actions/workflows/pages.yaml)
+[![Backend](https://github.com/koisland/SAPTester/actions/workflows/fly.yaml/badge.svg)](https://github.com/koisland/SAPTester/actions/workflows/fly.yaml)
 [![CI](https://github.com/koisland/SAPTester/actions/workflows/ci.yaml/badge.svg)](https://github.com/koisland/SAPTester/actions/workflows/ci.yaml)
 
-Front-end website and REST API for the [`saptest`](https://github.com/koisland/SuperAutoTest) Rust library.
+Front-end website and REST API for the [`saptest`](https://github.com/koisland/SuperAutoTest) library.
 
-<img src="docs/battle_ui.png" width="50%" ></img>
+<img src="docs/battle_ui.png" width="60%" ></img>
 
-> Check out the webpage @ [`https://koisland.github.io/SAPTester/`](https://koisland.github.io/SAPTester/)
+> View @ [`https://koisland.github.io/SAPTester/`](https://koisland.github.io/SAPTester/)
 
 ## API
 To view database fields, refer to the [`saptest` `db` module documentation](https://docs.rs/saptest/latest/saptest/db/index.html).
