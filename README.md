@@ -1,8 +1,17 @@
 # SAPTester
-Front-end and REST API for [`saptest`](https://github.com/koisland/SuperAutoTest) Rust library.
+[![CI](https://github.com/koisland/SAPTester/actions/workflows/ci.yaml/badge.svg)](https://github.com/koisland/SAPTester/actions/workflows/ci.yaml)
+
+Front-end website and REST API for the [`saptest`](https://github.com/koisland/SuperAutoTest) Rust library.
+
+<img src="docs/battle_ui.png" width="50%" ></img>
+
+> Check out the webpage @ [`https://koisland.github.io/SAPTester/`](https://koisland.github.io/SAPTester/)
 
 ## API
 To view database fields, refer to the [`saptest` `db` module documentation](https://docs.rs/saptest/latest/saptest/db/index.html).
+
+Deployed on `fly.io` in single region atm.
+* 'sjc' - (*San Jose, California (US)*)
 
 ### **Pets**
 *Get all pets.*
