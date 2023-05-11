@@ -16,7 +16,6 @@ pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
             cx.render(rsx! {
                 table {
                     class: "w3-table w3-responsive w3-white",
-                    style: "display: inline-block;",
                     tr {
                         if selected_team_pets.is_empty() {
                             cx.render(rsx! {

@@ -16,25 +16,29 @@ use crate::{
     RECORDS,
 };
 
+fn ItemTypeClickMsg<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
+    cx.render(rsx! {
+        div { class: "w3-panel",
+            "Click an item type to display its contents."
+        }
+    })
+}
+
+fn UnableToRetrieveItemMsg<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
+    cx.render(rsx! {
+        div { class: "w3-panel",
+            "Unable to retrieve information from API."
+        }
+    })
+}
+
 pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let Some(records) = RECORDS.get() else {
-        return cx.render(rsx! {
-            br {}
-            div {
-                class: "w3-container w3-responsive",
-                "Click an item type to display its contents."
-            }
-        })
+        return ItemTypeClickMsg(cx)
     };
 
     let Some(pets) = records.get("Pets") else {
-        return cx.render(rsx! {
-            br {}
-            div {
-                class: "w3-container w3-responsive",
-                "Unable to retrieve pet information."
-            }
-        })
+        return UnableToRetrieveItemMsg(cx)
     };
 
     // TODO: Filter query.
@@ -73,23 +77,11 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 
 pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     let Some(records) = RECORDS.get() else {
-        return cx.render(rsx! {
-            br {}
-            div {
-                class: "w3-container w3-responsive",
-                "Click an item type to display its contents."
-            }
-        })
+        return ItemTypeClickMsg(cx)
     };
 
     let Some(foods) = records.get("Foods") else {
-        return cx.render(rsx! {
-            br {}
-            div {
-                class: "w3-container w3-responsive",
-                "Unable to retrieve food information."
-            }
-        })
+        return UnableToRetrieveItemMsg(cx)
     };
 
     cx.render(rsx! {
