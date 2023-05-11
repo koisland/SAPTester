@@ -16,6 +16,8 @@ use crate::{
     RECORDS,
 };
 
+const SELECTABLE_PACKS: [&str; 6] = ["Turtle", "Puppy", "Star", "Weekly", "Unknown", "All"];
+
 fn ItemTypeClickMsg<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
     cx.render(rsx! {
         div { class: "w3-panel",
@@ -203,7 +205,7 @@ pub fn GameItemsFilterContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element
                                     .and_modify(|field| { *field = evt.data.value.clone() });
                             });
                     },
-                    [String::from("Turtle"), String::from("Puppy"), String::from("Star"), String::from("Weekly"),String::from("Unknown")].into_iter().map(|pack| {
+                    SELECTABLE_PACKS.into_iter().map(|pack| {
                         cx.render(rsx! {
                             option {
                                 value: "{pack}",

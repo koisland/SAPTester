@@ -36,7 +36,7 @@ impl SAPSimpleRecord {
                         let tier = filter_val.parse::<u64>()?;
                         Ok(self.tier() == tier)
                     } else {
-                        Ok(&self.pack() == filter_val)
+                        Ok(&self.pack() == filter_val || filter_val == "All")
                     }
                 })
                 .all(|value: Result<bool, Box<dyn Error>>| value.unwrap_or(false))
