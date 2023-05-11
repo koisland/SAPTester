@@ -1,5 +1,5 @@
 # SAPTester
-Front-end for [`saptest`](https://github.com/koisland/SuperAutoTest) Rust library.
+Front-end and REST API for [`saptest`](https://github.com/koisland/SuperAutoTest) Rust library.
 
 ## API
 To view database fields, refer to the [`saptest` `db` module documentation](https://docs.rs/saptest/latest/saptest/db/index.html).
@@ -47,18 +47,53 @@ curl -X GET "https://saptest.fly.dev/db/foods?tier=6&random=true"
 ```
 
 ### Battle
-WIP
-
-
-## Deployment
-WIP.
+Test a battle between two teams.
 
 ```bash
-cd frontend/
-trunk build --release --public-url SAPTester
-mkdir ../docs
-mv dist/* ../docs
+curl -X POST "https://saptest.fly.dev/battle" -H "Content-Type: application/json" -d "@file.json"
 ```
+
+`file.json`
+```json
+{
+    "friend_team": {
+        "name": "The Super Auto Pets",
+        "pets": [
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            },
+            {
+                "name": "Slot"
+            },
+        ]
+    },
+    "enemy_team": {
+        "name": "The Super Auto Pets 2",
+        "pets": [
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            },
+            {
+                "name": "Dog",
+                "attack": 3,
+                "health": 4,
+                "level": 1,
+                "item": "Honey"
+            }
+        ]
+    }
+}
+
+```
+
 
 ## Sources
 * https://www.w3schools.com/w3css/w3css_references.asp
