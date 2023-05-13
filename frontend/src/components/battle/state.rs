@@ -3,8 +3,7 @@ use std::error::Error;
 
 use crate::{
     components::battle::{ui::BattleUIState, ALLOWED_TEAM_SIZE},
-    records::{pet::PetProperty, record::SAPSimpleRecord},
-    RECORDS,
+    records::{pet::PetProperty, query::retrieve_record, record::SAPSimpleRecord},
 };
 
 pub fn get_selected_pet_property(
@@ -27,10 +26,7 @@ pub fn get_selected_pet_property(
                 match property_name {
                     "Attack" => Some(PetProperty::Attack(pet.attack)),
                     "Health" => Some(PetProperty::Health(pet.health)),
-                    "Effect" => RECORDS.get()
-                        .and_then(|rec| rec.get("Pets"))
-                        .and_then(|pets| pets.get(&pet_name_lvl))
-                        .map(|rec| PetProperty::Effect(rec.effect())),
+                    "Effect" => retrieve_record("Pets", &pet_name_lvl).map(|rec| PetProperty::Effect(rec.effect())),
                     "Food" => Some(PetProperty::Food(pet.item.clone())),
                     "Level" => Some(PetProperty::Level(pet.level.unwrap_or(1))),
                     _ => None

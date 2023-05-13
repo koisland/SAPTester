@@ -7,8 +7,7 @@ use crate::{
         ui::BattleUIState,
         ATTACK_ICON, HEALTH_ICON, MAX_PET_HEALTH, MIN_PET_HEALTH,
     },
-    records::{effect::SimpleEffect, pet::PetProperty},
-    RECORDS,
+    records::{effect::SimpleEffect, pet::PetProperty, query::retrieve_record},
 };
 
 fn LabeledStatInput<'a>(
@@ -181,10 +180,9 @@ fn PetFoodContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
             }
         })
     };
-    if let Some((Some(food_effect), food_name)) = RECORDS
-        .get()
-        .and_then(|records| records.get("Foods").and_then(|foods| foods.get(&pet_food)))
-        .map(|food| (food.effect(), food.name()))
+
+    if let Some((Some(food_effect), food_name)) =
+        retrieve_record("Foods", &pet_food).map(|food_rec| (food_rec.effect(), food_rec.name()))
     {
         cx.render(rsx! {
             div { class: "w3-container", EffectPanel(cx, &food_effect, Some(food_name)) }

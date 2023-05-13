@@ -6,8 +6,7 @@ use crate::{
         state::{assign_pet_property, remove_pet_from_team, swap_pet_on_team},
         ui::BattleUIState,
     },
-    records::pet::PetProperty,
-    RECORDS,
+    records::{pet::PetProperty, query::retrieve_record},
 };
 
 pub fn TeamContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element {
@@ -90,10 +89,7 @@ fn PetItemIcon<'a>(cx: Scope<'a, BattleUIState<'a>>, pet_idx: usize) -> Element<
         return None
     };
 
-    let Some(img_url) = RECORDS.get()
-        .and_then(|records| records.get("Foods"))
-        .and_then(|foods|
-            foods.get(&pet_item).map(|food| food.img_url())) else
+    let Some(img_url) = retrieve_record("Foods", &pet_item).map(|food| food.img_url()) else
     {
         return None
     };

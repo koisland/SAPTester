@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use itertools::Itertools;
 use serde_json::Value;
-use std::error::Error;
+use std::{collections::VecDeque, error::Error};
 
 use crate::{
     components::battle::{fight::BattleResponse, ui::PetSlots, EMPTY_SLOT_ICON},
@@ -11,7 +11,7 @@ use crate::{
         record::SAPSimpleRecord,
         team::{SimpleTeam, Teams},
     },
-    BACKEND_API_URL, DEV_BACKEND_API_URL,
+    BACKEND_API_URL, DEV_BACKEND_API_URL, RECORDS,
 };
 
 pub type ItemRecords = IndexMap<String, SAPSimpleRecord>;
@@ -21,6 +21,13 @@ pub fn in_saptest_dev() -> bool {
         Ok(val) => val == 1.to_string(),
         Err(_e) => false,
     }
+}
+
+pub fn retrieve_record<'a>(rec_type: &'a str, item_name: &'a str) -> Option<&'a SAPSimpleRecord> {
+    RECORDS
+        .get()
+        .and_then(|records| records.get(rec_type))
+        .and_then(|items| items.get(item_name))
 }
 
 pub async fn get_all_sap_records() -> Result<IndexMap<String, ItemRecords>, Box<dyn Error>> {
@@ -44,6 +51,25 @@ pub async fn get_all_sap_records() -> Result<IndexMap<String, ItemRecords>, Box<
     Ok(item_img_urls)
 }
 
+/// Reformat slots so pets in correct order before being sent to battle endpoint.
+fn reformat_slots(slots: VecDeque<(String, Option<SimplePet>)>) -> Vec<Option<SimplePet>> {
+    slots
+        .into_iter()
+        // Slots stored in reverse order so front-most pet always on right side visually.
+        .rev()
+        .map(|mut slot| {
+            // Convert item name id with pack in it to basic name.
+            // ex. Honey_Turtle -> Honey
+            if let Some(item_pack_name) = slot.1.as_mut().and_then(|pet| pet.item.as_mut()) {
+                *item_pack_name = retrieve_record("Foods", item_pack_name)
+                    .map(|rec| rec.name())
+                    .unwrap_or(item_pack_name.to_owned())
+            }
+            slot.1
+        })
+        .collect_vec()
+}
+
 pub async fn post_battle(
     mut teams: IndexMap<String, PetSlots>,
 ) -> Result<BattleResponse, Box<dyn Error>> {
@@ -53,8 +79,8 @@ pub async fn post_battle(
         BACKEND_API_URL
     };
     let (Some(friends), Some(enemies)) = (
-        teams.remove("Friend").map(|slots| slots.into_iter().rev().map(|slot| slot.1).collect_vec()),
-        teams.remove("Enemy").map(|slots| slots.into_iter().rev().map(|slot| slot.1).collect_vec())
+        teams.remove("Friend").map(reformat_slots),
+        teams.remove("Enemy").map(reformat_slots)
     ) else {
         return Err("Missing a team.".into())
     };

@@ -43,7 +43,6 @@ pub fn PetsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
         return UnableToRetrieveItemMsg(cx)
     };
 
-    // TODO: Filter query.
     cx.render(rsx! {
         div { class: "w3-table w3-striped w3-responsive w3-white",
             pets.iter()
@@ -88,7 +87,6 @@ pub fn FoodsContainer<'a>(cx: Scope<'a, BattleUIState<'a>>) -> Element<'a> {
 
     cx.render(rsx! {
         div { class: "w3-table w3-striped w3-responsive w3-white",
-
             foods.iter()
             .filter(|(_, food_info)| food_info.holdable() && food_info.is_valid_item(cx))
             .map(|(name, food_info)|
