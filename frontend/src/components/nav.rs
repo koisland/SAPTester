@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_router::Link;
 
-use crate::SAPTEST_URL;
+use crate::SAPTESTER_URL;
 
 pub fn Nav(cx: Scope) -> Element {
     cx.render(rsx! {
@@ -19,7 +19,7 @@ pub fn Nav(cx: Scope) -> Element {
                     "About"
                 }
                 Link {
-                    to: SAPTEST_URL,
+                    to: SAPTESTER_URL,
                     external: true,
                     class: "w3-bar-item w3-button w3-hover-white",
                     "GitHub"

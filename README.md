@@ -12,8 +12,10 @@ Front-end website and REST API for the [`saptest`](https://github.com/koisland/S
 ## API
 To view database fields, refer to the [`saptest` `db` module documentation](https://docs.rs/saptest/latest/saptest/db/index.html).
 
-Deployed on `fly.io` in single region atm.
-* 'sjc' - (*San Jose, California (US)*)
+Deployed on `fly.io` in the following [regions](https://fly.io/docs/reference/regions/).
+* 'sjc'
+* 'lax'
+*  'bos
 
 ### **Pets**
 *Get all pets.*
