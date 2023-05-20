@@ -2023,9 +2023,9 @@ dependencies = [
 
 [[package]]
 name = "saptest"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ceefd00d3af925ce2a35da25c065fbb86e35e91ef0a16a271f36603e0f89f92"
+checksum = "90104c1698f28b052f324dd11065702b0a48f9a6b1fee94c809439db9313c2b4"
 dependencies = [
  "indexmap",
  "itertools",
