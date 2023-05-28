@@ -11,10 +11,11 @@ use crate::{
         record::SAPSimpleRecord,
         team::{SimpleTeam, Teams},
     },
-    BACKEND_API_URL, RECORDS,
+    BACKEND_API_URL, DEV_BACKEND_API_URL, RECORDS,
 };
 
 pub type ItemRecords = IndexMap<String, SAPSimpleRecord>;
+pub const IN_DEV: Option<&str> = std::option_env!("DEV_MODE");
 
 pub fn retrieve_record<'a>(rec_type: &'a str, item_name: &'a str) -> Option<&'a SAPSimpleRecord> {
     RECORDS
@@ -66,6 +67,11 @@ fn reformat_slots(slots: VecDeque<(String, Option<SimplePet>)>) -> Vec<Option<Si
 pub async fn post_battle(
     mut teams: IndexMap<String, PetSlots>,
 ) -> Result<BattleResponse, Box<dyn Error>> {
+    let backend_url = if IN_DEV.is_some() {
+        DEV_BACKEND_API_URL
+    } else {
+        BACKEND_API_URL
+    };
     let (Some(friends), Some(enemies)) = (
         teams.remove("Friend").map(reformat_slots),
         teams.remove("Enemy").map(reformat_slots)
@@ -86,7 +92,7 @@ pub async fn post_battle(
 
     let client = reqwest::Client::new();
     let res = client
-        .post(format!("{BACKEND_API_URL}/battle"))
+        .post(format!("{backend_url}/battle"))
         .json(&teams)
         .send()
         .await?
@@ -97,7 +103,12 @@ pub async fn post_battle(
 }
 
 pub async fn get_sap_records(categ: &str) -> Result<ItemRecords, Box<dyn Error>> {
-    let url = format!("{BACKEND_API_URL}/db/{categ}");
+    let backend_url = if IN_DEV.is_some() {
+        DEV_BACKEND_API_URL
+    } else {
+        BACKEND_API_URL
+    };
+    let url = format!("{backend_url}/db/{categ}");
 
     let resp_text = reqwest::get(url).await?.text().await?;
     let pet_records: Value = serde_json::from_str(&resp_text)?;
